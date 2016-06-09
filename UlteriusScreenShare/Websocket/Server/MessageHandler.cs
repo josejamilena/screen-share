@@ -29,12 +29,12 @@ namespace UlteriusScreenShare.Websocket.Server
             return null;
         }
 
-        public static byte[] EncryptFrame(byte[] data, AuthClient client)
+        public static string EncryptFrame(byte[] data, AuthClient client)
         {
             if (client == null) return null;
             var keyBytes = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesKey));
             var keyIv = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesIv));
-            return UAes.EncryptFile(data, keyBytes, keyIv);
+            return Convert.ToBase64String(UAes.EncryptFile(data, keyBytes, keyIv));
         }
 
         public static byte[] DecryptFrame(byte[] data, AuthClient client)

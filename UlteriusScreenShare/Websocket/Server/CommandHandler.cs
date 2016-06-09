@@ -130,6 +130,7 @@ namespace UlteriusScreenShare.Websocket.Server
             using (var jpegStream = new MemoryStream())
             {
                 var screenGrab = Capture.CaptureDesktop();
+
                 if (screenGrab == null)
                 {
                     return;
@@ -143,15 +144,15 @@ namespace UlteriusScreenShare.Websocket.Server
         private void SendFrameData(AuthClient client, byte[] compressed)
         {
             var encryptedData = MessageHandler.EncryptFrame(compressed, client);
-            var encryptedBase = Convert.ToBase64String(encryptedData);
-            if (string.IsNullOrEmpty(encryptedBase))
+            if (string.IsNullOrEmpty(encryptedData))
             {
                 Console.WriteLine("Frame Null");
                 return;
             }
             if (client.Client.IsConnected)
             {
-                client.Client.WriteStringAsync(encryptedBase, CancellationToken.None);
+                client.Client.WriteStringAsync(encryptedData, CancellationToken.None);
+
             }
         }
 
