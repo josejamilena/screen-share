@@ -10,7 +10,66 @@ namespace UlteriusScreenShare.Security
 {
     internal class UAes
     {
-     
+        public static byte[] DecryptFile(byte[] bytesToBeDecrypted, byte[] key, byte[] iv)
+        {
+            byte[] decryptedBytes;
+
+            using (var ms = new MemoryStream())
+            {
+                using (var aes = new RijndaelManaged())
+                {
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+                    aes.FeedbackSize = 128;
+
+                    aes.Key = key;
+                    aes.IV = iv;
+
+                    using (
+                        var cs = new CryptoStream(ms, aes.CreateDecryptor(aes.Key, aes.IV),
+                            CryptoStreamMode.Write))
+                    {
+                        cs.Write(bytesToBeDecrypted, 0, bytesToBeDecrypted.Length);
+                        cs.Close();
+                    }
+                    decryptedBytes = ms.ToArray();
+                }
+            }
+
+            return decryptedBytes;
+        }
+
+        public static byte[] EncryptFile(byte[] bytesToBeEncrypted, byte[] key, byte[] iv)
+        {
+            byte[] encrypted;
+            // Create a RijndaelManaged object  
+            // with the specified key and IV.  
+            using (var aes = new RijndaelManaged())
+            {
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                aes.FeedbackSize = 128;
+
+                aes.Key = key;
+                aes.IV = iv;
+
+                // Create a decrytor to perform the stream transform.  
+                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                // Create the streams used for encryption.  
+                using (var msEncrypt = new MemoryStream())
+                {
+                    using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    {
+                        csEncrypt.Write(bytesToBeEncrypted, 0, bytesToBeEncrypted.Length);
+                    }
+                    encrypted = msEncrypt.ToArray();
+                }
+            }
+            // Return the encrypted bytes from the memory stream.  
+            return encrypted;
+        }
+
         public static byte[] Encrypt(string plainText, byte[] key, byte[] iv)
         {
             // Check arguments.  
@@ -59,53 +118,7 @@ namespace UlteriusScreenShare.Security
             return encrypted;
         }
 
-        public static byte[] EncryptB(byte[] data, byte[] key, byte[] iv)
-        {
-            // Check arguments.  
-            if (data == null || data.Length <= 0)
-            {
-                throw new ArgumentNullException("data");
-            }
-            if (key == null || key.Length <= 0)
-            {
-                throw new ArgumentNullException("key");
-            }
-            if (iv == null || iv.Length <= 0)
-            {
-                throw new ArgumentNullException("key");
-            }
-            byte[] encrypted;
-            // Create a RijndaelManaged object  
-            // with the specified key and IV.  
-            using (var rijAlg = new RijndaelManaged())
-            {
-                rijAlg.Mode = CipherMode.CBC;
-                rijAlg.Padding = PaddingMode.PKCS7;
-                rijAlg.FeedbackSize = 128;
-
-                rijAlg.Key = key;
-                rijAlg.IV = iv;
-
-                // Create a decrytor to perform the stream transform.  
-                var encryptor = rijAlg.CreateEncryptor(rijAlg.Key, rijAlg.IV);
-
-                // Create the streams used for encryption.  
-                using (var msEncrypt = new MemoryStream())
-                {
-                    using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (var swEncrypt = new StreamWriter(csEncrypt))
-                        {
-                            //Write all data to the stream.  
-                            swEncrypt.Write(data);
-                        }
-                        encrypted = msEncrypt.ToArray();
-                    }
-                }
-            }
-            // Return the encrypted bytes from the memory stream.  
-            return encrypted;
-        }
+       
 
         public static string Decrypt(byte[] cipherText, byte[] key, byte[] iv)
         {

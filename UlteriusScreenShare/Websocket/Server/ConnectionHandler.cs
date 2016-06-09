@@ -41,7 +41,7 @@ namespace UlteriusScreenShare.Websocket.Server
         {
             AuthClient client;
 
-            if (Clients.TryRemove(websocket.GetHashCode().ToString(), out client))
+            if (Clients.TryGetValue(websocket.GetHashCode().ToString(), out client))
             {
                 if (!client.AesShook)
                 {
@@ -53,14 +53,16 @@ namespace UlteriusScreenShare.Websocket.Server
                 }
                 else if (client.Authenticated && client.AesShook)
                 {
-                    try
-                    {
-                        _commandHandler.ProcessCommand(websocket, MessageHandler.DecryptMessage(message, client));
-                    }
-                    catch (Exception)
+
+                    var packet = MessageHandler.DecryptMessage(message, client);
+                    if (packet != null)
                     {
 
-                       Console.WriteLine("Failed to decrypt packet on command.");
+                        _commandHandler.ProcessCommand(client, packet);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Packet null");
                     }
                 }
             }

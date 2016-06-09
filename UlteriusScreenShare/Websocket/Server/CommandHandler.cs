@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
@@ -29,7 +30,7 @@ namespace UlteriusScreenShare.Websocket.Server
             _connectionHandler = connectionHandler;
         }
 
-        public void ProcessCommand(WebSocket client, string message)
+        public void ProcessCommand(AuthClient client, string message)
         {
             var packet = JObject.Parse(message);
             var eventType = (string) packet["EventType"];
@@ -124,7 +125,7 @@ namespace UlteriusScreenShare.Websocket.Server
             }
         }
 
-        private void HandleFullFrame(WebSocket client)
+        private void HandleFullFrame(AuthClient client)
         {
             using (var jpegStream = new MemoryStream())
             {
@@ -139,25 +140,18 @@ namespace UlteriusScreenShare.Websocket.Server
             }
         }
 
-        private void SendFrameData(WebSocket client, byte[] compressed)
+        private void SendFrameData(AuthClient client, byte[] compressed)
         {
-            var encryptedData = MessageHandler.EncryptBuffer(compressed, client);
-            if (encryptedData != null && client.IsConnected)
+            var encryptedData = MessageHandler.EncryptFrame(compressed, client);
+            var encryptedBase = Convert.ToBase64String(encryptedData);
+            if (string.IsNullOrEmpty(encryptedBase))
             {
-                try
-                {
-                    using (var messageWriter = client.CreateMessageWriter(WebSocketMessageType.Binary))
-                    {
-                        using (var stream = new MemoryStream(encryptedData))
-                        {
-                            stream.CopyTo(messageWriter);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+                Console.WriteLine("Frame Null");
+                return;
+            }
+            if (client.Client.IsConnected)
+            {
+                client.Client.WriteStringAsync(encryptedBase, CancellationToken.None);
             }
         }
 

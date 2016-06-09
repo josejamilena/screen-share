@@ -29,25 +29,22 @@ namespace UlteriusScreenShare.Websocket.Server
             return null;
         }
 
-        public static byte[] EncryptBuffer(byte[] data, WebSocket client)
+        public static byte[] EncryptFrame(byte[] data, AuthClient client)
         {
-            try
-            {
-                AuthClient authClient;
-                if (ConnectionHandler.Clients.TryGetValue(client.GetHashCode().ToString(), out authClient))
-                {
-                    var keybytes = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(authClient.AesKey));
-                    var iv = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(authClient.AesIv));
-                    return UAes.EncryptB(data, keybytes, iv);
-                }
-                return null;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Could not encrypt buffer: " + e.Message);
-                return null;
-            }
+            if (client == null) return null;
+            var keyBytes = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesKey));
+            var keyIv = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesIv));
+            return UAes.EncryptFile(data, keyBytes, keyIv);
         }
+
+        public static byte[] DecryptFrame(byte[] data, AuthClient client)
+        {
+            if (client == null) return null;
+            var keyBytes = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesKey));
+            var keyIv = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesIv));
+            return UAes.DecryptFile(data, keyBytes, keyIv);
+        }
+
 
         public static void SendMessage(string endpoint, object data, AuthClient authClient)
         {
