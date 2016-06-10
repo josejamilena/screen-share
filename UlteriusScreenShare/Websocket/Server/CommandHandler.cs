@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 using Ionic.Zlib;
+using nQuant;
 using Newtonsoft.Json.Linq;
 using UlteriusScreenShare.Desktop;
 using vtortola.WebSockets;
@@ -22,6 +23,7 @@ namespace UlteriusScreenShare.Websocket.Server
     internal class CommandHandler
     {
         private readonly ConnectionHandler _connectionHandler;
+        private readonly WuQuantizer _quantizer = new WuQuantizer();
         private readonly Screen[] _screens = Screen.AllScreens;
         private readonly InputSimulator _simulator = new InputSimulator();
 
@@ -127,7 +129,7 @@ namespace UlteriusScreenShare.Websocket.Server
 
         private void HandleFullFrame(AuthClient client)
         {
-            using (var jpegStream = new MemoryStream())
+            using (var frameStream = new MemoryStream())
             {
                 var screenGrab = Capture.CaptureDesktop();
 
@@ -135,9 +137,15 @@ namespace UlteriusScreenShare.Websocket.Server
                 {
                     return;
                 }
-                screenGrab.Save(jpegStream, ImageFormat.Jpeg);
-                var compressed = ZlibStream.CompressBuffer(jpegStream.ToArray());
-                SendFrameData(client, compressed);
+                using (var bitmap = screenGrab)
+                {
+                    using (var quantized = _quantizer.QuantizeImage(bitmap))
+                    {
+                        quantized.Save(frameStream, ImageFormat.Png);
+                        var compressed = ZlibStream.CompressBuffer(frameStream.ToArray());
+                        SendFrameData(client, compressed);
+                    }
+                }
             }
         }
 
@@ -152,7 +160,6 @@ namespace UlteriusScreenShare.Websocket.Server
             if (client.Client.IsConnected)
             {
                 client.Client.WriteStringAsync(encryptedData, CancellationToken.None);
-
             }
         }
 
