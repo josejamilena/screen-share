@@ -1,6 +1,8 @@
 ﻿#region
 
 using System;
+using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Web.Script.Serialization;
@@ -29,12 +31,12 @@ namespace UlteriusScreenShare.Websocket.Server
             return null;
         }
 
-        public static string EncryptFrame(byte[] data, AuthClient client)
+        public static byte[] EncryptFrame(byte[] data, AuthClient client)
         {
             if (client == null) return null;
             var keyBytes = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesKey));
             var keyIv = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesIv));
-            return Convert.ToBase64String(UAes.EncryptFile(data, keyBytes, keyIv));
+            return UAes.EncryptFile(data, keyBytes, keyIv);
         }
 
         public static byte[] DecryptFrame(byte[] data, AuthClient client)

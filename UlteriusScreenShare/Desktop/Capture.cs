@@ -44,7 +44,7 @@ namespace UlteriusScreenShare.Desktop
                         Gdi.DeleteDC(hMemDc);
                         frame = Image.FromHbitmap(hBitmap);
                         Gdi.DeleteObject(hBitmap);
-                        // GC.Collect();
+                       // GC.Collect();
                     }
                 }
                 finally

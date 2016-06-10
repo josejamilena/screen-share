@@ -10,6 +10,36 @@ namespace UlteriusScreenShare.Security
 {
     internal class UAes
     {
+        public static byte[] EncryptFile(byte[] bytesToBeEncrypted, byte[] keyBytes, byte[] ivBytes)
+        {
+            byte[] encrypted;
+            // Create a RijndaelManaged object  
+            // with the specified key and IV.  
+            using (var aes = new RijndaelManaged())
+            {
+                aes.Mode = CipherMode.ECB;
+                aes.Padding = PaddingMode.PKCS7;
+                aes.Key = keyBytes;
+                aes.IV = ivBytes;
+
+                // Create a decrytor to perform the stream transform.  
+                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                // Create the streams used for encryption.  
+                using (var msEncrypt = new MemoryStream())
+                {
+                    using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    {
+                        csEncrypt.Write(bytesToBeEncrypted, 0, bytesToBeEncrypted.Length);
+                    }
+                    encrypted = msEncrypt.ToArray();
+                }
+            }
+            // Return the encrypted bytes from the memory stream.  
+            return encrypted;
+        }
+
+
         public static byte[] DecryptFile(byte[] bytesToBeDecrypted, byte[] key, byte[] iv)
         {
             byte[] decryptedBytes;
@@ -39,36 +69,7 @@ namespace UlteriusScreenShare.Security
             return decryptedBytes;
         }
 
-        public static byte[] EncryptFile(byte[] bytesToBeEncrypted, byte[] key, byte[] iv)
-        {
-            byte[] encrypted;
-            // Create a RijndaelManaged object  
-            // with the specified key and IV.  
-            using (var aes = new RijndaelManaged())
-            {
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-                aes.FeedbackSize = 128;
-
-                aes.Key = key;
-                aes.IV = iv;
-
-                // Create a decrytor to perform the stream transform.  
-                var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
-
-                // Create the streams used for encryption.  
-                using (var msEncrypt = new MemoryStream())
-                {
-                    using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        csEncrypt.Write(bytesToBeEncrypted, 0, bytesToBeEncrypted.Length);
-                    }
-                    encrypted = msEncrypt.ToArray();
-                }
-            }
-            // Return the encrypted bytes from the memory stream.  
-            return encrypted;
-        }
+     
 
         public static byte[] Encrypt(string plainText, byte[] key, byte[] iv)
         {
