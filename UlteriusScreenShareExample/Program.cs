@@ -28,6 +28,7 @@ namespace UlteriusScreenShareExample
         }
         static void Main(string[] args)
         {
+            
             var server = new ScreenShareServer("Server", ConvertToSecureString("pass"), IPAddress.Any, 5555);
             server.Start();
             Console.Read();

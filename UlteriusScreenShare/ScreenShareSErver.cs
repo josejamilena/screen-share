@@ -1,11 +1,16 @@
 ﻿#region
 
 using System;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security;
 using System.Threading;
+using Ionic.Zlib;
+using nQuant;
+using UlteriusScreenShare.Desktop;
 using UlteriusScreenShare.Websocket;
 using UlteriusScreenShare.Websocket.Server;
 using vtortola.WebSockets;
@@ -21,7 +26,7 @@ namespace UlteriusScreenShare
         private readonly int _port;
         private readonly WebSocketEventListener _server;
         private readonly string _serverName;
-
+        private readonly WuQuantizer _quantizer = new WuQuantizer();
         public ScreenShareServer(string serverName, SecureString password, IPAddress address, int port)
         {
             _port = port;

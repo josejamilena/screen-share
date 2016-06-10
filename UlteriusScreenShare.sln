@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UlteriusScreenShare", "Ulte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UlteriusScreenShareExample", "UlteriusScreenShareExample\UlteriusScreenShareExample.csproj", "{EA65F94D-D15B-401A-AAF2-BC0298FB0637}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UlteriusScreenShareClient", "UlteriusScreenShareClient\UlteriusScreenShareClient.csproj", "{6412E095-8813-4719-8064-CE1E034E6B0A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{EA65F94D-D15B-401A-AAF2-BC0298FB0637}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA65F94D-D15B-401A-AAF2-BC0298FB0637}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA65F94D-D15B-401A-AAF2-BC0298FB0637}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6412E095-8813-4719-8064-CE1E034E6B0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6412E095-8813-4719-8064-CE1E034E6B0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6412E095-8813-4719-8064-CE1E034E6B0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6412E095-8813-4719-8064-CE1E034E6B0A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
