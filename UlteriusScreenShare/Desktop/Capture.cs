@@ -15,31 +15,46 @@ namespace UlteriusScreenShare.Desktop
 
         public static Bitmap CaptureDesktop()
         {
-            SIZE size;
-            var hDc = Win32.GetDC(Win32.GetDesktopWindow());
-            var hMemDc = Gdi.CreateCompatibleDC(hDc);
+            Bitmap frame = null;
+            {
+                var hDc = IntPtr.Zero;
+                try
+                {
+                    SIZE size;
+                    hDc = Win32.GetDC(Win32.GetDesktopWindow());
+                    var hMemDc = Gdi.CreateCompatibleDC(hDc);
 
-            size.Cx = Win32.GetSystemMetrics
-                (Win32.SmCxscreen);
+                    size.Cx = Win32.GetSystemMetrics
+                        (Win32.SmCxscreen);
 
-            size.Cy = Win32.GetSystemMetrics
-                (Win32.SmCyscreen);
+                    size.Cy = Win32.GetSystemMetrics
+                        (Win32.SmCyscreen);
 
-            var hBitmap = Gdi.CreateCompatibleBitmap(hDc, size.Cx/2, size.Cy);
+                    var hBitmap = Gdi.CreateCompatibleBitmap(hDc, size.Cx, size.Cy);
 
-            if (hBitmap == IntPtr.Zero) return null;
-            var hOld = Gdi.SelectObject
-                (hMemDc, hBitmap);
+                    if (hBitmap != IntPtr.Zero)
+                    {
+                        var hOld = Gdi.SelectObject
+                            (hMemDc, hBitmap);
 
-            Gdi.BitBlt(hMemDc, 0, 0, size.Cx/2, size.Cy, hDc,
-                0, 0, Gdi.Srccopy);
+                        Gdi.BitBlt(hMemDc, 0, 0, size.Cx, size.Cy, hDc,
+                            0, 0, Gdi.Srccopy);
 
-            Gdi.SelectObject(hMemDc, hOld);
-            Gdi.DeleteDC(hMemDc);
-            Win32.ReleaseDC(Win32.GetDesktopWindow(), hDc);
-            var frame = Image.FromHbitmap(hBitmap);
-            Gdi.DeleteObject(hBitmap);
-            GC.Collect();
+                        Gdi.SelectObject(hMemDc, hOld);
+                        Gdi.DeleteDC(hMemDc);
+                        frame = Image.FromHbitmap(hBitmap);
+                        Gdi.DeleteObject(hBitmap);
+                        // GC.Collect();
+                    }
+                }
+                finally
+                {
+                    if (hDc != IntPtr.Zero)
+                    {
+                        Win32.ReleaseDC(Win32.GetDesktopWindow(), hDc);
+                    }
+                }
+            }
             return frame;
         }
 

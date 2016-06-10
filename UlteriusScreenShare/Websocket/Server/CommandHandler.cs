@@ -23,7 +23,6 @@ namespace UlteriusScreenShare.Websocket.Server
     internal class CommandHandler
     {
         private readonly ConnectionHandler _connectionHandler;
-        private readonly WuQuantizer _quantizer = new WuQuantizer();
         private readonly Screen[] _screens = Screen.AllScreens;
         private readonly InputSimulator _simulator = new InputSimulator();
 
@@ -137,9 +136,10 @@ namespace UlteriusScreenShare.Websocket.Server
                 {
                     return;
                 }
+                var quantizer = new WuQuantizer();
                 using (var bitmap = screenGrab)
                 {
-                    using (var quantized = _quantizer.QuantizeImage(bitmap))
+                    using (var quantized = quantizer.QuantizeImage(bitmap))
                     {
                         quantized.Save(frameStream, ImageFormat.Png);
                         var compressed = ZlibStream.CompressBuffer(frameStream.ToArray());

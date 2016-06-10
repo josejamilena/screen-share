@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -26,7 +27,6 @@ namespace UlteriusScreenShare
         private readonly int _port;
         private readonly WebSocketEventListener _server;
         private readonly string _serverName;
-        private readonly WuQuantizer _quantizer = new WuQuantizer();
         public ScreenShareServer(string serverName, SecureString password, IPAddress address, int port)
         {
             _port = port;
@@ -46,6 +46,8 @@ namespace UlteriusScreenShare
                 TcpBacklog = 1000
             });
             _connectionHandler = new ConnectionHandler(_serverName, _password, _server);
+           
+          
         }
 
         public bool PortAvailable()
