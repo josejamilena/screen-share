@@ -17,7 +17,7 @@ namespace UlteriusScreenShare.Security
             // with the specified key and IV.  
             using (var aes = new RijndaelManaged())
             {
-                aes.Mode = CipherMode.ECB;
+                aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
                 aes.Key = keyBytes;
                 aes.IV = ivBytes;
