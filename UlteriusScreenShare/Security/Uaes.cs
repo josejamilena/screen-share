@@ -18,7 +18,7 @@ namespace UlteriusScreenShare.Security
             using (var aes = new RijndaelManaged())
             {
                 aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
+                aes.Padding = PaddingMode.None;
                 aes.Key = keyBytes;
                 aes.IV = ivBytes;
 
@@ -49,8 +49,8 @@ namespace UlteriusScreenShare.Security
                 using (var aes = new RijndaelManaged())
                 {
                     aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-                    aes.FeedbackSize = 128;
+                    aes.Padding = PaddingMode.None;
+ 
 
                     aes.Key = key;
                     aes.IV = iv;
@@ -92,8 +92,8 @@ namespace UlteriusScreenShare.Security
             using (var rijAlg = new RijndaelManaged())
             {
                 rijAlg.Mode = CipherMode.CBC;
-                rijAlg.Padding = PaddingMode.PKCS7;
-                rijAlg.FeedbackSize = 128;
+                rijAlg.Padding = PaddingMode.None;
+     
 
                 rijAlg.Key = key;
                 rijAlg.IV = iv;
@@ -147,8 +147,7 @@ namespace UlteriusScreenShare.Security
             {
                 //Settings  
                 rijAlg.Mode = CipherMode.CBC;
-                rijAlg.Padding = PaddingMode.PKCS7;
-                rijAlg.FeedbackSize = 128;
+                rijAlg.Padding = PaddingMode.None;
                 rijAlg.Key = key;
                 rijAlg.IV = iv;
 
