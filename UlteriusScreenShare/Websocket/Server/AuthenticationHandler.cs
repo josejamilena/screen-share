@@ -15,14 +15,8 @@ namespace UlteriusScreenShare.Websocket.Server
         {
             try
             {
-                if (!packetData.IsBase64String())
-                {
-                    throw new InvalidOperationException("Packet must be base64 encoded if encrypted.");
-                }
-
                 if (authClient != null)
                 {
-                    packetData = MessageHandler.DecryptMessage(packetData, authClient);
                     if (packetData == null)
                     {
                         throw new Exception("Packet is null");

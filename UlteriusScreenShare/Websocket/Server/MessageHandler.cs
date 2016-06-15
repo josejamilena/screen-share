@@ -15,18 +15,14 @@ namespace UlteriusScreenShare.Websocket.Server
 {
     internal class MessageHandler
     {
-        public static string DecryptMessage(string message, AuthClient client)
+        public static string DecryptMessage(byte[] message, AuthClient client)
         {
-            if (!message.IsBase64String())
-            {
-                throw new InvalidOperationException("Packet must be base64 encoded if encrypted.");
-            }
             if (client != null)
             {
                 var keybytes = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesKey));
                 var iv = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(client.AesIv));
-                var packet = Convert.FromBase64String(message);
-                return UAes.Decrypt(packet, keybytes, iv);
+                
+                return UAes.Decrypt(message, keybytes, iv);
             }
             return null;
         }

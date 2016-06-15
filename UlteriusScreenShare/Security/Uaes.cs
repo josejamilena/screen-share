@@ -93,8 +93,6 @@ namespace UlteriusScreenShare.Security
             {
                 rijAlg.Mode = CipherMode.CBC;
                 rijAlg.Padding = PaddingMode.PKCS7;
-     
-
                 rijAlg.Key = key;
                 rijAlg.IV = iv;
 

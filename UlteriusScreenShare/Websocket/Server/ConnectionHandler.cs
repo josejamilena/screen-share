@@ -27,8 +27,32 @@ namespace UlteriusScreenShare.Websocket.Server
             _server = server;
             _server.OnConnect += HandleConnect;
             _server.OnDisconnect += HandleDisconnect;
-            _server.OnMessage += HandleMessage;
+            _server.OnPlainTextMessage += HandlePlainTextMessage;
+            _server.OnEncryptedMessage += HandleEncryptedMessage;
             _server.OnError += HandleError;
+        }
+
+        private void HandleEncryptedMessage(WebSocket websocket, byte[] message)
+        {
+            AuthClient client;
+
+            if (Clients.TryGetValue(websocket.GetHashCode().ToString(), out client))
+            {
+                var packet = MessageHandler.DecryptMessage(message, client);
+                if (packet != null)
+                {
+                    if (!client.Authenticated && client.AesShook)
+                    {
+                        AuthenticationHandler.Authenticate(_password.ConvertToUnsecureString(), packet, client);
+                    }
+                    else if (client.Authenticated && client.AesShook)
+                    {
+                        _commandHandler.ProcessCommand(client, packet);
+                    }
+
+                }
+            }
+         
         }
 
 
@@ -37,33 +61,14 @@ namespace UlteriusScreenShare.Websocket.Server
             Console.WriteLine($"Error occured on {websocket.GetHashCode()}: {error.Message}");
         }
 
-        private void HandleMessage(WebSocket websocket, string message)
+        private void HandlePlainTextMessage(WebSocket websocket, string message)
         {
             AuthClient client;
-
             if (Clients.TryGetValue(websocket.GetHashCode().ToString(), out client))
             {
                 if (!client.AesShook)
                 {
                     AuthenticationHandler.AesHandshake(message, client);
-                }
-                else if (!client.Authenticated && client.AesShook)
-                {
-                    AuthenticationHandler.Authenticate(_password.ConvertToUnsecureString(), message, client);
-                }
-                else if (client.Authenticated && client.AesShook)
-                {
-
-                    var packet = MessageHandler.DecryptMessage(message, client);
-                    if (packet != null)
-                    {
-
-                        _commandHandler.ProcessCommand(client, packet);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Packet null");
-                    }
                 }
             }
         }
