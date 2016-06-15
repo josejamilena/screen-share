@@ -61,8 +61,9 @@ namespace UlteriusScreenShare.Websocket.Server
                         var keyBytes = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(authClient.AesKey));
                         var keyIv = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(authClient.AesIv));
                         var encryptedData = UAes.Encrypt(json, keyBytes, keyIv);
-                        json = Convert.ToBase64String(encryptedData);
+                        PushBinary(authClient.Client, encryptedData);
                         Console.WriteLine("Message Encrypted");
+                        return;
                     }
                 }
             }
@@ -71,6 +72,24 @@ namespace UlteriusScreenShare.Websocket.Server
                 //TODO Handle
             }
             Push(authClient.Client, json);
+        }
+
+        public static void PushBinary(WebSocket client, byte[] data)
+        {
+            try
+            {
+                using (var messageWriter = client.CreateMessageWriter(WebSocketMessageType.Binary))
+                {
+                    using (var stream = new MemoryStream(data))
+                    {
+                        stream.CopyTo(messageWriter);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
         private static void Push(WebSocket client, string json)

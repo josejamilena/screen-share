@@ -14,8 +14,8 @@ namespace UlteriusScreenShare.Websocket.Server
     {
         public static ConcurrentDictionary<string, AuthClient> Clients;
         private readonly CommandHandler _commandHandler;
-        private readonly WebSocketEventListener _server;
         private readonly SecureString _password;
+        private readonly WebSocketEventListener _server;
         private string _serverName;
 
         public ConnectionHandler(string serverName, SecureString password, WebSocketEventListener server)
@@ -49,10 +49,8 @@ namespace UlteriusScreenShare.Websocket.Server
                     {
                         _commandHandler.ProcessCommand(client, packet);
                     }
-
                 }
             }
-         
         }
 
 
