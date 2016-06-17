@@ -58,15 +58,15 @@ namespace UlteriusScreenShare.Websocket.Server
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
-                
+                throw e;
+
             }
         }
 
 
         private void HandleError(WebSocket websocket, Exception error)
         {
-            Console.WriteLine($"Error occured on {websocket.GetHashCode()}: {error.Message}");
+            Console.WriteLine($"Error occured on {websocket.GetHashCode()}: {error.Message}|{error.StackTrace}");
         }
 
         private void HandlePlainTextMessage(WebSocket websocket, string message)

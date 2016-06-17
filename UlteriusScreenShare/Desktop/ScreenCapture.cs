@@ -49,7 +49,8 @@ namespace UlteriusScreenShare.Desktop
                 using (var binaryWriter = new BinaryWriter(screenStream))
                 {
                     //write the id of the frame
-                    binaryWriter.Write(Guid.NewGuid().ToString());
+             
+                    binaryWriter.Write(Guid.NewGuid().ToByteArray());
                     //write the x and y coords of the rect
                     binaryWriter.Write(bounds.X);
                     binaryWriter.Write(bounds.Y);
@@ -92,6 +93,7 @@ namespace UlteriusScreenShare.Desktop
                     if (bounds != Rectangle.Empty && image != null)
                     {
                         var data = PackScreenCaptureData(image, bounds);
+                       
 
                         if (data != null && data.Length > 0)
                         {
