@@ -9,7 +9,6 @@ using System.Linq;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
-using Ionic.Zlib;
 using Newtonsoft.Json.Linq;
 using UlteriusScreenShare.Desktop;
 using vtortola.WebSockets;
@@ -23,6 +22,8 @@ namespace UlteriusScreenShare.Websocket.Server
         private readonly ConnectionHandler _connectionHandler;
         private readonly Screen[] _screens = Screen.AllScreens;
         private readonly InputSimulator _simulator = new InputSimulator();
+        private readonly ScreenCapture _capture = new ScreenCapture();
+
 
         public CommandHandler(ConnectionHandler connectionHandler)
         {
@@ -75,8 +76,7 @@ namespace UlteriusScreenShare.Websocket.Server
                 switch (eventAction)
                 {
                     case "Full":
-
-                        HandleFullFrame(client);
+                       //HandleFullFrame(client);
                         break;
                 }
             }
@@ -124,56 +124,8 @@ namespace UlteriusScreenShare.Websocket.Server
             }
         }
 
-        private void HandleFullFrame(AuthClient client)
-        {
-            var encoder = ImageCodecInfo.GetImageEncoders()
-                .First(c => c.FormatID == ImageFormat.Jpeg.Guid);
-            var encParams = new EncoderParameters(1) {Param = {[0] = new EncoderParameter(Encoder.Quality, 75L)}};
-
-            using (var frameStream = new MemoryStream())
-            {
-                var screenGrab = Capture.CaptureDesktop();
-                var now = DateTime.Now;
-                Console.WriteLine("Frame Taken " + now);
-                if (screenGrab == null)
-                {
-                    return;
-                }
-                screenGrab.Save(frameStream, encoder, encParams);
-                var compressed = ZlibStream.CompressBuffer(frameStream.ToArray());
-                SendFrameData(client, compressed);
-            }
-        }
-
-        private void SendFrameData(AuthClient client, byte[] compressed)
-        {
-            var encryptedData = MessageHandler.EncryptFrame(compressed, client);
-            if (encryptedData.Length == 0)
-            {
-                Console.WriteLine("Frame Null");
-                return;
-            }
-            if (client.Client.IsConnected)
-            {
-                try
-                {
-                    using (var messageWriter = client.Client.CreateMessageWriter(WebSocketMessageType.Binary))
-                    {
-                        using (var stream = new MemoryStream(encryptedData))
-                        {
-                            stream.CopyTo(messageWriter);
-                            var now = DateTime.Now;
-                            Console.WriteLine(now + "Frame Encoded Sent " + encryptedData.Length);
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
-            }
-        }
-
+     
+      
         private void HandleDoubleClick()
         {
             Console.WriteLine("Double click fired");

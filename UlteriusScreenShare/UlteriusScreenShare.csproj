@@ -86,9 +86,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Security\Streams\OFBStream.cs" />
+    <Compile Include="Security\Streams\ZeroStream.cs" />
     <Compile Include="Security\StringUtils.cs" />
     <Compile Include="Websocket\Server\AuthenticationHandler.cs" />
-    <Compile Include="Desktop\Capture.cs" />
+    <Compile Include="Desktop\ScreenCapture.cs" />
     <Compile Include="Websocket\Server\CommandHandler.cs" />
     <Compile Include="Security\Rsa.cs" />
     <Compile Include="Security\UAes.cs" />

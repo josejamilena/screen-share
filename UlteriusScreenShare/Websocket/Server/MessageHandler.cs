@@ -5,6 +5,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using UlteriusScreenShare.Security;
 using vtortola.WebSockets;
@@ -62,7 +63,6 @@ namespace UlteriusScreenShare.Websocket.Server
                         var keyIv = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(authClient.AesIv));
                         var encryptedData = UAes.Encrypt(json, keyBytes, keyIv);
                         PushBinary(authClient.Client, encryptedData);
-                        Console.WriteLine("Message Encrypted");
                         return;
                     }
                 }
@@ -71,10 +71,13 @@ namespace UlteriusScreenShare.Websocket.Server
             {
                 //TODO Handle
             }
-            Push(authClient.Client, json);
+            if (authClient != null)
+            {
+                Push(authClient.Client, json);
+            }
         }
 
-        public static void PushBinary(WebSocket client, byte[] data)
+        public static async void PushBinary(WebSocket client, byte[] data)
         {
             try
             {
@@ -82,13 +85,15 @@ namespace UlteriusScreenShare.Websocket.Server
                 {
                     using (var stream = new MemoryStream(data))
                     {
-                        stream.CopyTo(messageWriter);
+                        await stream.CopyToAsync(messageWriter);
+                      
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                // ignored
+                Console.WriteLine(e.Message);
+               
             }
         }
 

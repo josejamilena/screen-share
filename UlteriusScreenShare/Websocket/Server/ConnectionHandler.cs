@@ -34,22 +34,30 @@ namespace UlteriusScreenShare.Websocket.Server
 
         private void HandleEncryptedMessage(WebSocket websocket, byte[] message)
         {
-            AuthClient client;
-
-            if (Clients.TryGetValue(websocket.GetHashCode().ToString(), out client))
+            try
             {
-                var packet = MessageHandler.DecryptMessage(message, client);
-                if (packet != null)
+                AuthClient client;
+
+                if (Clients.TryGetValue(websocket.GetHashCode().ToString(), out client))
                 {
-                    if (!client.Authenticated && client.AesShook)
+                    var packet = MessageHandler.DecryptMessage(message, client);
+                    if (packet != null)
                     {
-                        AuthenticationHandler.Authenticate(_password.ConvertToUnsecureString(), packet, client);
-                    }
-                    else if (client.Authenticated && client.AesShook)
-                    {
-                        _commandHandler.ProcessCommand(client, packet);
+                        if (!client.Authenticated && client.AesShook)
+                        {
+                            AuthenticationHandler.Authenticate(_password.ConvertToUnsecureString(), packet, client);
+                        }
+                        else if (client.Authenticated && client.AesShook)
+                        {
+                            _commandHandler.ProcessCommand(client, packet);
+                        }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                
             }
         }
 
@@ -61,13 +69,21 @@ namespace UlteriusScreenShare.Websocket.Server
 
         private void HandlePlainTextMessage(WebSocket websocket, string message)
         {
-            AuthClient client;
-            if (Clients.TryGetValue(websocket.GetHashCode().ToString(), out client))
+            try
             {
-                if (!client.AesShook)
+                AuthClient client;
+                if (Clients.TryGetValue(websocket.GetHashCode().ToString(), out client))
                 {
-                    AuthenticationHandler.AesHandshake(message, client);
+                    if (!client.AesShook)
+                    {
+                        AuthenticationHandler.AesHandshake(message, client);
+                    }
                 }
+            }
+            catch (Exception)
+            {
+
+                
             }
         }
 
