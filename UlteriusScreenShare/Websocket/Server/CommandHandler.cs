@@ -2,16 +2,13 @@
 
 using System;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 using Newtonsoft.Json.Linq;
 using UlteriusScreenShare.Desktop;
-using vtortola.WebSockets;
 
 #endregion
 
@@ -22,9 +19,8 @@ namespace UlteriusScreenShare.Websocket.Server
         private readonly ConnectionHandler _connectionHandler;
         private readonly Screen[] _screens = Screen.AllScreens;
         private readonly InputSimulator _simulator = new InputSimulator();
+
         private readonly ScreenCapture _capture = new ScreenCapture();
-
-
         public CommandHandler(ConnectionHandler connectionHandler)
         {
             _connectionHandler = connectionHandler;
@@ -76,7 +72,7 @@ namespace UlteriusScreenShare.Websocket.Server
                 switch (eventAction)
                 {
                     case "Full":
-                       //HandleFullFrame(client);
+                        //HandleFullFrame(client);
                         break;
                 }
             }
@@ -124,8 +120,7 @@ namespace UlteriusScreenShare.Websocket.Server
             }
         }
 
-     
-      
+
         private void HandleDoubleClick()
         {
             Console.WriteLine("Double click fired");

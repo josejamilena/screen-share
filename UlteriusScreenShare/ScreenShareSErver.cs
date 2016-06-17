@@ -46,7 +46,6 @@ namespace UlteriusScreenShare
                 TcpBacklog = 1000
             });
             _connectionHandler = new ConnectionHandler(_serverName, _password, _server);
-           
           
         }
 

@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Security;
+using UlteriusScreenShare.Desktop;
 using UlteriusScreenShare.Security;
 using vtortola.WebSockets;
 
@@ -17,6 +18,7 @@ namespace UlteriusScreenShare.Websocket.Server
         private readonly SecureString _password;
         private readonly WebSocketEventListener _server;
         private string _serverName;
+       
 
         public ConnectionHandler(string serverName, SecureString password, WebSocketEventListener server)
         {
