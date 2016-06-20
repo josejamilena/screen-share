@@ -5,7 +5,9 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Text;
 using System.Threading;
+using Ionic.Zlib;
 using UlteriusScreenShare.Websocket.Server;
 using UlteriusScreenShare.Win32Api;
 
@@ -49,23 +51,24 @@ namespace UlteriusScreenShare.Desktop
                 using (var binaryWriter = new BinaryWriter(screenStream))
                 {
                     //write the id of the frame
-             
                     binaryWriter.Write(Guid.NewGuid().ToByteArray());
-                    //write the x and y coords of the rect
+                    //write the x and y coords of the 
+                   
                     binaryWriter.Write(bounds.X);
                     binaryWriter.Write(bounds.Y);
                     //write the rect data
-                
                     binaryWriter.Write(bounds.Top);
                     binaryWriter.Write(bounds.Bottom);
                     binaryWriter.Write(bounds.Left);
                     binaryWriter.Write(bounds.Right);
                     using (var ms = new MemoryStream())
                     {
-                        image.Save(ms, ImageFormat.Jpeg);
+                        image.Save(ms, ImageFormat.Png);
+
                         var imgData = ms.ToArray();
+                        var compressed = ZlibStream.CompressBuffer(imgData);
                         //write the image
-                        binaryWriter.Write(imgData);
+                        binaryWriter.Write(compressed);
                     }
                 }
                 results = screenStream.ToArray();
@@ -81,7 +84,7 @@ namespace UlteriusScreenShare.Desktop
             while (!worker.CancellationPending)
             {
                 var clients = ConnectionHandler.Clients;
-                if (clients.Count > 0)
+                if (clients.Count >  0)
                 {
                     var image = Screen(ref bounds);
                     if (_numByteFullScreen == 1)
@@ -93,7 +96,7 @@ namespace UlteriusScreenShare.Desktop
                     if (bounds != Rectangle.Empty && image != null)
                     {
                         var data = PackScreenCaptureData(image, bounds);
-                       
+                      
 
                         if (data != null && data.Length > 0)
                         {
@@ -122,6 +125,7 @@ namespace UlteriusScreenShare.Desktop
                     //reset it so when a client connects we get the full frame
                     _prevBitmap = null;
                 }
+          
             }
         }
 

@@ -16,11 +16,11 @@ namespace UlteriusScreenShare.Websocket.Server
 {
     internal class CommandHandler
     {
+        private readonly ScreenCapture _capture = new ScreenCapture();
         private readonly ConnectionHandler _connectionHandler;
         private readonly Screen[] _screens = Screen.AllScreens;
         private readonly InputSimulator _simulator = new InputSimulator();
 
-        private readonly ScreenCapture _capture = new ScreenCapture();
         public CommandHandler(ConnectionHandler connectionHandler)
         {
             _connectionHandler = connectionHandler;
@@ -72,10 +72,19 @@ namespace UlteriusScreenShare.Websocket.Server
                 switch (eventAction)
                 {
                     case "Full":
-                        //HandleFullFrame(client);
+                        HandleFullFrame(client);
                         break;
                 }
             }
+        }
+
+        private void HandleFullFrame(AuthClient client)
+        {
+            var frameData = new
+            {
+                Screen.PrimaryScreen.Bounds
+            };
+            MessageHandler.SendMessage("frameData", frameData, client);
         }
 
         private void HandleScroll(JObject packet)

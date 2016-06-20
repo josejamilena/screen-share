@@ -1,10 +1,10 @@
-﻿#region
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
-
-#endregion
+using System.Text;
+using System.Threading.Tasks;
 
 namespace UlteriusScreenShare.Security.Streams
 {
@@ -29,7 +29,7 @@ namespace UlteriusScreenShare.Security.Streams
             _parent = parent;
             _cbcStream = new CryptoStream(new ZeroStream(), algo.CreateEncryptor(), CryptoStreamMode.Read);
             _mode = mode;
-            _keyStreamBuffer = new byte[algo.BlockSize*Blocks];
+            _keyStreamBuffer = new byte[algo.BlockSize * Blocks];
             _readWriteBuffer = new byte[_keyStreamBuffer.Length];
         }
 
@@ -65,13 +65,13 @@ namespace UlteriusScreenShare.Security.Streams
             for (var i = 0; i < read; i++)
             {
                 // NOTE could be optimized (branches for each byte)
-                if (_keyStreamBufferOffset%_keyStreamBuffer.Length == 0)
+                if (_keyStreamBufferOffset % _keyStreamBuffer.Length == 0)
                 {
                     FillKeyStreamBuffer();
                     _keyStreamBufferOffset = 0;
                 }
 
-                buffer[offset + i] = (byte) (_readWriteBuffer[i]
+                buffer[offset + i] = (byte)(_readWriteBuffer[i]
                                              ^ _keyStreamBuffer[_keyStreamBufferOffset++]);
             }
 
@@ -88,19 +88,19 @@ namespace UlteriusScreenShare.Security.Streams
             var readWriteBufferOffset = 0;
             for (var i = 0; i < count; i++)
             {
-                if (_keyStreamBufferOffset%_keyStreamBuffer.Length == 0)
+                if (_keyStreamBufferOffset % _keyStreamBuffer.Length == 0)
                 {
                     FillKeyStreamBuffer();
                     _keyStreamBufferOffset = 0;
                 }
 
-                if (readWriteBufferOffset%_readWriteBuffer.Length == 0)
+                if (readWriteBufferOffset % _readWriteBuffer.Length == 0)
                 {
                     _parent.Write(_readWriteBuffer, 0, readWriteBufferOffset);
                     readWriteBufferOffset = 0;
                 }
 
-                _readWriteBuffer[readWriteBufferOffset++] = (byte) (buffer[offset + i]
+                _readWriteBuffer[readWriteBufferOffset++] = (byte)(buffer[offset + i]
                                                                     ^ _keyStreamBuffer[_keyStreamBufferOffset++]);
             }
 

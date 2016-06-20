@@ -42,23 +42,26 @@ namespace UlteriusScreenShare.Websocket.Server
 
                 if (Clients.TryGetValue(websocket.GetHashCode().ToString(), out client))
                 {
-                    var packet = MessageHandler.DecryptMessage(message, client);
-                    if (packet != null)
+                    if (message != null && message.Length > 0)
                     {
-                        if (!client.Authenticated && client.AesShook)
+                        var packet = MessageHandler.DecryptMessage(message, client);
+                        if (packet != null)
                         {
-                            AuthenticationHandler.Authenticate(_password.ConvertToUnsecureString(), packet, client);
-                        }
-                        else if (client.Authenticated && client.AesShook)
-                        {
-                            _commandHandler.ProcessCommand(client, packet);
+                            if (!client.Authenticated && client.AesShook)
+                            {
+                                AuthenticationHandler.Authenticate(_password.ConvertToUnsecureString(), packet, client);
+                            }
+                            else if (client.Authenticated && client.AesShook)
+                            {
+                                _commandHandler.ProcessCommand(client, packet);
+                            }
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                throw e;
+                
 
             }
         }

@@ -86,7 +86,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Security\Streams\OFBStream.cs" />
+    <Compile Include="Security\Streams\OfbStream.cs" />
     <Compile Include="Security\Streams\ZeroStream.cs" />
     <Compile Include="Security\StringUtils.cs" />
     <Compile Include="Websocket\Server\AuthenticationHandler.cs" />

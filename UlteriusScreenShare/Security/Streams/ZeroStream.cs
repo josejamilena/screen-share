@@ -1,9 +1,9 @@
-﻿#region
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-
-#endregion
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace UlteriusScreenShare.Security.Streams
 {
