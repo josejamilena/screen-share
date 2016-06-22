@@ -124,6 +124,8 @@ namespace UlteriusScreenShare.Desktop
                 {
                     //reset it so when a client connects we get the full frame
                     _prevBitmap = null;
+                    Console.WriteLine("Sleeping no clients");
+                    Thread.Sleep(5000);
                 }
           
             }
