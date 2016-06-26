@@ -2,20 +2,19 @@
 
 using System;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using UlteriusScreenShare.Security;
 using vtortola.WebSockets;
 
 #endregion
 
-namespace UlteriusScreenShare.Websocket.Server
+namespace UlteriusScreenShare.Websocket.Server.Handlers
 {
     internal class MessageHandler
     {
+        public static MessageQueueManager MessageQueueManager = new MessageQueueManager();
         public static string DecryptMessage(byte[] message, AuthClient client)
         {
             if (client != null)
@@ -62,7 +61,9 @@ namespace UlteriusScreenShare.Websocket.Server
                         var keyBytes = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(authClient.AesKey));
                         var keyIv = Encoding.UTF8.GetBytes(Rsa.SecureStringToString(authClient.AesIv));
                         var encryptedData = UAes.Encrypt(json, keyBytes, keyIv);
-                        PushBinary(authClient.Client, encryptedData);
+                        var packet = new Packet(authClient, encryptedData, Packet.MessageType.Binary);
+                       MessageQueueManager.SendQueue.Add(packet);
+                        // PushBinary(authClient.Client, encryptedData);
                         return;
                     }
                 }
@@ -73,39 +74,8 @@ namespace UlteriusScreenShare.Websocket.Server
             }
             if (authClient != null)
             {
-                Push(authClient.Client, json);
-            }
-        }
-
-        public static  void PushBinary(WebSocket client, byte[] data)
-        {
-            try
-            {
-                using (var messageWriter = client.CreateMessageWriter(WebSocketMessageType.Binary))
-                {
-                    using (var stream = new MemoryStream(data))
-                    {
-                       stream.CopyTo(messageWriter);
-                      
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-               
-            }
-        }
-
-        private static void Push(WebSocket client, string json)
-        {
-            try
-            {
-                client.WriteStringAsync(json, CancellationToken.None);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
+                var packet = new Packet(authClient, json, Packet.MessageType.Text);
+               MessageQueueManager.SendQueue.Add(packet);
             }
         }
     }

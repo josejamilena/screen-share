@@ -5,10 +5,10 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Text;
 using System.Threading;
 using Ionic.Zlib;
 using UlteriusScreenShare.Websocket.Server;
+using UlteriusScreenShare.Websocket.Server.Handlers;
 using UlteriusScreenShare.Win32Api;
 
 #endregion
@@ -50,7 +50,7 @@ namespace UlteriusScreenShare.Desktop
             {
                 using (var binaryWriter = new BinaryWriter(screenStream))
                 {
-                    //write the id of the frame
+                       //write the id of the frame
                     binaryWriter.Write(Guid.NewGuid().ToByteArray());
                     //write the x and y coords of the 
                    
@@ -84,7 +84,7 @@ namespace UlteriusScreenShare.Desktop
             while (!worker.CancellationPending)
             {
                 var clients = ConnectionHandler.Clients;
-                if (clients.Count >  0)
+                if (clients.Count > 0)
                 {
                     var image = Screen(ref bounds);
                     if (_numByteFullScreen == 1)
@@ -96,7 +96,7 @@ namespace UlteriusScreenShare.Desktop
                     if (bounds != Rectangle.Empty && image != null)
                     {
                         var data = PackScreenCaptureData(image, bounds);
-                      
+
 
                         if (data != null && data.Length > 0)
                         {
@@ -109,8 +109,8 @@ namespace UlteriusScreenShare.Desktop
                                     {
                                         return;
                                     }
-                                    MessageHandler.PushBinary(client.Value.Client, encryptedData);
-
+                                    var packet = new Packet(client.Value, encryptedData, Packet.MessageType.Binary);
+                                    MessageHandler.MessageQueueManager.SendQueue.Add(packet);
                                     var perc1 = 100.0*4.0*image.Width*image.Height/_numByteFullScreen;
                                     var perc2 = 100.0*data.Length/_numByteFullScreen;
                                     Console.WriteLine(
@@ -127,7 +127,6 @@ namespace UlteriusScreenShare.Desktop
                     Console.WriteLine("Sleeping no clients");
                     Thread.Sleep(5000);
                 }
-          
             }
         }
 

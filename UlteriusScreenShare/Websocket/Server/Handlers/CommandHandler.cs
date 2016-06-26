@@ -12,7 +12,7 @@ using UlteriusScreenShare.Desktop;
 
 #endregion
 
-namespace UlteriusScreenShare.Websocket.Server
+namespace UlteriusScreenShare.Websocket.Server.Handlers
 {
     internal class CommandHandler
     {

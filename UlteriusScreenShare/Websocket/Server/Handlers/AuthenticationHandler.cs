@@ -7,7 +7,7 @@ using UlteriusScreenShare.Security;
 
 #endregion
 
-namespace UlteriusScreenShare.Websocket.Server
+namespace UlteriusScreenShare.Websocket.Server.Handlers
 {
     internal class AuthenticationHandler
     {
@@ -54,6 +54,7 @@ namespace UlteriusScreenShare.Websocket.Server
                 {
                     message = "Login Failed!",
                     reason = e.Message,
+                    stackTrace = e.StackTrace,
                     loggedIn = false
                 };
                 MessageHandler.SendMessage("login", login, authClient);

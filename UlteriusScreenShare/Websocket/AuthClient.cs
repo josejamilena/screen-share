@@ -8,7 +8,7 @@ using vtortola.WebSockets;
 
 namespace UlteriusScreenShare.Websocket
 {
-    internal class AuthClient
+    public class AuthClient
     {
         public AuthClient(WebSocket client)
         {

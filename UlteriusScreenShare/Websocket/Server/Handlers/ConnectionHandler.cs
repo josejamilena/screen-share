@@ -3,13 +3,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Security;
-using UlteriusScreenShare.Desktop;
 using UlteriusScreenShare.Security;
 using vtortola.WebSockets;
 
 #endregion
 
-namespace UlteriusScreenShare.Websocket.Server
+namespace UlteriusScreenShare.Websocket.Server.Handlers
 {
     internal class ConnectionHandler
     {
@@ -61,7 +60,7 @@ namespace UlteriusScreenShare.Websocket.Server
             }
             catch (Exception e)
             {
-                
+                Console.WriteLine(e.Message);
 
             }
         }
@@ -85,15 +84,20 @@ namespace UlteriusScreenShare.Websocket.Server
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
-                
+                Console.WriteLine(e.Message);
             }
         }
 
         private void HandleDisconnect(WebSocket websocket)
         {
+            if (websocket.IsConnected)
+            {
+                //Why would we disconnect a valid client?
+                return;
+            }
             AuthClient client;
             if (Clients.TryRemove(websocket.GetHashCode().ToString(), out client))
             {

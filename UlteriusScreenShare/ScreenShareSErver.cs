@@ -15,6 +15,7 @@ using Ionic.Zlib;
 using UlteriusScreenShare.Desktop;
 using UlteriusScreenShare.Websocket;
 using UlteriusScreenShare.Websocket.Server;
+using UlteriusScreenShare.Websocket.Server.Handlers;
 using vtortola.WebSockets;
 
 #endregion
@@ -38,8 +39,10 @@ namespace UlteriusScreenShare
             var endpoint = new IPEndPoint(address, _port);
             _server = new WebSocketEventListener(endpoint, new WebSocketListenerOptions
             {
-                PingTimeout = TimeSpan.FromSeconds(5),
-                NegotiationTimeout = TimeSpan.FromSeconds(5),
+                PingTimeout = Timeout.InfiniteTimeSpan,
+                NegotiationTimeout = Timeout.InfiniteTimeSpan,
+                WebSocketReceiveTimeout = Timeout.InfiniteTimeSpan,
+                WebSocketSendTimeout = Timeout.InfiniteTimeSpan,
                 ParallelNegotiations = 16,
                 NegotiationQueueCapacity = 256,
                 TcpBacklog = 1000,
