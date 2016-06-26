@@ -67,9 +67,9 @@ namespace UlteriusScreenShare.Websocket.Server
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                //TODO Handle
+              Console.WriteLine(e.Message);
             }
             if (authClient != null)
             {
@@ -77,7 +77,7 @@ namespace UlteriusScreenShare.Websocket.Server
             }
         }
 
-        public static async void PushBinary(WebSocket client, byte[] data)
+        public static  void PushBinary(WebSocket client, byte[] data)
         {
             try
             {
@@ -85,7 +85,7 @@ namespace UlteriusScreenShare.Websocket.Server
                 {
                     using (var stream = new MemoryStream(data))
                     {
-                        await stream.CopyToAsync(messageWriter);
+                       stream.CopyTo(messageWriter);
                       
                     }
                 }

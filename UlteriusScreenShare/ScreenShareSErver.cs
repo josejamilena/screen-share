@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security;
+using System.ServiceModel.Channels;
 using System.Threading;
 using Ionic.Zlib;
 
@@ -37,13 +38,12 @@ namespace UlteriusScreenShare
             var endpoint = new IPEndPoint(address, _port);
             _server = new WebSocketEventListener(endpoint, new WebSocketListenerOptions
             {
-                PingTimeout = TimeSpan.FromSeconds(15),
-                NegotiationTimeout = TimeSpan.FromSeconds(15),
-                WebSocketSendTimeout = TimeSpan.FromSeconds(15),
-                WebSocketReceiveTimeout = TimeSpan.FromSeconds(15),
-                ParallelNegotiations = Environment.ProcessorCount*2,
+                PingTimeout = TimeSpan.FromSeconds(5),
+                NegotiationTimeout = TimeSpan.FromSeconds(5),
+                ParallelNegotiations = 16,
                 NegotiationQueueCapacity = 256,
-                TcpBacklog = 1000
+                TcpBacklog = 1000,
+                BufferManager = BufferManager.CreateBufferManager((8192 + 1024) * 1000, 8192 + 1024)
             });
             _connectionHandler = new ConnectionHandler(_serverName, _password, _server);
           

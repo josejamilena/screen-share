@@ -28,6 +28,7 @@ namespace UlteriusScreenShare.Desktop
 
         public ScreenCapture()
         {
+            Console.WriteLine("Starting screen capture service");
             var junk = new Bitmap(10, 10);
             _graphics = Graphics.FromImage(junk);
             var backgroundWorker = new BackgroundWorker
@@ -84,7 +85,7 @@ namespace UlteriusScreenShare.Desktop
             while (!worker.CancellationPending)
             {
                 var clients = ConnectionHandler.Clients;
-                if (clients.Count >  0)
+                if (clients.Count > 0)
                 {
                     var image = Screen(ref bounds);
                     if (_numByteFullScreen == 1)
@@ -109,12 +110,12 @@ namespace UlteriusScreenShare.Desktop
                                     {
                                         return;
                                     }
-                                    MessageHandler.PushBinary(client.Value.Client, encryptedData);
+                                   MessageHandler.PushBinary(client.Value.Client, encryptedData);
+                               
 
                                     var perc1 = 100.0*4.0*image.Width*image.Height/_numByteFullScreen;
                                     var perc2 = 100.0*data.Length/_numByteFullScreen;
-                                    Console.WriteLine(
-                                        $"{DateTime.Now}: Screen - {perc1} percent, {perc2} percent with compression");
+                                    Console.WriteLine($"{DateTime.Now}: Screen - {perc1} percent, {perc2} percent with compression");
                                 }
                             }
                         }
