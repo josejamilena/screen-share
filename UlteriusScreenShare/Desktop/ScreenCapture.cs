@@ -49,7 +49,7 @@ namespace UlteriusScreenShare.Desktop
                 using (var binaryWriter = new BinaryWriter(screenStream))
                 {
                     //write the id of the frame
-                    binaryWriter.Write(Guid.NewGuid().ToByteArray());
+                   binaryWriter.Write(Guid.NewGuid().ToByteArray());
                     //write the x and y coords of the 
                     binaryWriter.Write(bounds.X);
                     binaryWriter.Write(bounds.Y);
@@ -74,7 +74,7 @@ namespace UlteriusScreenShare.Desktop
         }
 
 
-        private void ScreenService(object sender)
+        private void ScreenService()
         {
             var bounds = Rectangle.Empty;
             while (true)
@@ -87,7 +87,7 @@ namespace UlteriusScreenShare.Desktop
                     {
                         // Initialize the screen size (used for performance metrics)
                         //
-                        _numByteFullScreen = bounds.Width*bounds.Height*4;
+                        _numByteFullScreen = bounds.Width * bounds.Height * 4;
                     }
                     if (bounds != Rectangle.Empty && image != null)
                     {
@@ -98,8 +98,8 @@ namespace UlteriusScreenShare.Desktop
                         {
                             foreach (var client in clients)
                             {
-                              // var packet = new Packet(client.Value, data, Packet.MessageType.Binary);
-                                //MessageHandler.MessageQueueManager.SendQueue.Add(packet);
+                                // var packet = new Packet(client.Value, data, Packet.MessageType.Binary);
+                               // MessageHandler.MessageQueueManager.SendQueue.Add(packet);
                                 if (client.Value.AesShook && client.Value.Authenticated)
                                 {
                                     var encryptedData = MessageHandler.EncryptFrame(data, client.Value);
@@ -163,7 +163,7 @@ namespace UlteriusScreenShare.Desktop
 
                         lock (_newBitmap)
                         {
-                            PercentOfImage = 100.0*(diff.Height*diff.Width)/(_newBitmap.Height*_newBitmap.Width);
+                            PercentOfImage = 100.0 * (diff.Height * diff.Width) / (_newBitmap.Height * _newBitmap.Width);
                         }
                     }
                 }
@@ -248,8 +248,8 @@ namespace UlteriusScreenShare.Desktop
                 // Get the number of integers (4 bytes) in each row
                 //	of the image.
                 //
-                var strideNew = newScreenData.Stride/numBytesPerPixel;
-                var stridePrev = previousScreenData.Stride/numBytesPerPixel;
+                var strideNew = newScreenData.Stride / numBytesPerPixel;
+                var stridePrev = previousScreenData.Stride / numBytesPerPixel;
 
                 // Get a pointer to the first pixel.
                 //
@@ -267,8 +267,8 @@ namespace UlteriusScreenShare.Desktop
                 {
                     // Cast the safe pointers into unsafe pointers.
                     //
-                    var pNew = (int*) (void*) scanNew0;
-                    var pPrev = (int*) (void*) scanPrev0;
+                    var pNew = (int*)(void*)scanNew0;
+                    var pPrev = (int*)(void*)scanPrev0;
 
                     // First Pass - Find the left and top bounds
                     //	of the minimum bounding rectangle. Adapt the
@@ -335,10 +335,10 @@ namespace UlteriusScreenShare.Desktop
                         // Set the pointers to the first element of the
                         //	bottom row.
                         //
-                        pNew = (int*) (void*) scanNew0;
-                        pPrev = (int*) (void*) scanPrev0;
-                        pNew += (_newBitmap.Height - 1)*strideNew;
-                        pPrev += (_prevBitmap.Height - 1)*stridePrev;
+                        pNew = (int*)(void*)scanNew0;
+                        pPrev = (int*)(void*)scanPrev0;
+                        pNew += (_newBitmap.Height - 1) * strideNew;
+                        pPrev += (_prevBitmap.Height - 1) * stridePrev;
 
                         // For each row (bottom to top)
                         //
