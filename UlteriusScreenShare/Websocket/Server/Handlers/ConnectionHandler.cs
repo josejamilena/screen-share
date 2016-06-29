@@ -17,7 +17,7 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
         private readonly SecureString _password;
         private readonly WebSocketEventListener _server;
         private string _serverName;
-       
+
 
         public ConnectionHandler(string serverName, SecureString password, WebSocketEventListener server)
         {
@@ -61,7 +61,6 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-
             }
         }
 
@@ -86,18 +85,12 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
             }
             catch (Exception e)
             {
-
                 Console.WriteLine(e.Message);
             }
         }
 
         private void HandleDisconnect(WebSocket websocket)
         {
-            if (websocket.IsConnected)
-            {
-                //Why would we disconnect a valid client?
-                return;
-            }
             AuthClient client;
             if (Clients.TryRemove(websocket.GetHashCode().ToString(), out client))
             {

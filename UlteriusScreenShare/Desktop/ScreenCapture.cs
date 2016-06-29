@@ -10,7 +10,6 @@ using System.Windows.Forms;
 using Ionic.Zlib;
 using UlteriusScreenShare.Websocket.Server;
 using UlteriusScreenShare.Websocket.Server.Handlers;
-using UlteriusScreenShare.Win32Api;
 
 #endregion
 
@@ -52,7 +51,7 @@ namespace UlteriusScreenShare.Desktop
                 using (var binaryWriter = new BinaryWriter(screenStream))
                 {
                     //write the id of the frame
-                    binaryWriter.Write(Guid.NewGuid().ToByteArray());
+                     binaryWriter.Write(Guid.NewGuid().ToByteArray());
                     //write the x and y coords of the 
 
                     binaryWriter.Write(bounds.X);
@@ -103,6 +102,8 @@ namespace UlteriusScreenShare.Desktop
                         {
                             foreach (var client in clients)
                             {
+                               // var packet = new Packet(client.Value, data, Packet.MessageType.Binary);
+                               // MessageHandler.MessageQueueManager.SendQueue.Add(packet);
                                 if (client.Value.AesShook && client.Value.Authenticated)
                                 {
                                     var encryptedData = MessageHandler.EncryptFrame(data, client.Value);
@@ -112,10 +113,6 @@ namespace UlteriusScreenShare.Desktop
                                     }
                                     var packet = new Packet(client.Value, encryptedData, Packet.MessageType.Binary);
                                     MessageHandler.MessageQueueManager.SendQueue.Add(packet);
-                                    var perc1 = 100.0*4.0*image.Width*image.Height/_numByteFullScreen;
-                                    var perc2 = 100.0*data.Length/_numByteFullScreen;
-                                    Console.WriteLine(
-                                        $"{DateTime.Now}: Screen - {perc1} percent, {perc2} percent with compression");
                                 }
                             }
                         }
@@ -123,29 +120,12 @@ namespace UlteriusScreenShare.Desktop
                 }
                 else
                 {
-                    //reset it so when a client connects we get the full frame
-                    _prevBitmap = null;
                     Console.WriteLine("Sleeping no clients");
                     Thread.Sleep(5000);
                 }
             }
         }
 
-        private static Rectangle GetDesktopBounds()
-        {
-            var l = int.MaxValue;
-            var t = int.MaxValue;
-            var r = int.MinValue;
-            var b = int.MinValue;
-            foreach (var screen in Screen.AllScreens)
-            {
-                if (screen.Bounds.Left < l) l = screen.Bounds.Left;
-                if (screen.Bounds.Top < t) t = screen.Bounds.Top;
-                if (screen.Bounds.Right > r) r = screen.Bounds.Right;
-                if (screen.Bounds.Bottom > b) b = screen.Bounds.Bottom;
-            }
-            return Rectangle.FromLTRB(l, t, r, b);
-        }
 
         public Bitmap LocalScreen(ref Rectangle bounds)
         {
@@ -434,46 +414,19 @@ namespace UlteriusScreenShare.Desktop
 
         public static Bitmap CaptureDesktop()
         {
-            var desktopContextHeight = IntPtr.Zero;
-            Bitmap screenImage = null;
-            try
-            {
-                desktopContextHeight = Win32.GetDC(Win32.GetDesktopWindow());
-                var gdiDesktopContext = Gdi.CreateCompatibleDC(desktopContextHeight);
-                Size screenSize;
-                screenSize.Width = Win32.GetSystemMetrics(0);
-                screenSize.Height = Win32.GetSystemMetrics(1);
-                var gdiBitmap = Gdi.CreateCompatibleBitmap(desktopContextHeight, screenSize.Width, screenSize.Height);
-                if (gdiBitmap != IntPtr.Zero)
-                {
-                    var oldGdi = Gdi.SelectObject(gdiDesktopContext, gdiBitmap);
-                    Gdi.BitBlt(gdiDesktopContext, 0, 0, screenSize.Width, screenSize.Height, desktopContextHeight,
-                        0, 0, Gdi.Srccopy);
-                    Gdi.SelectObject(gdiDesktopContext, oldGdi);
-                    screenImage = Image.FromHbitmap(gdiBitmap);
-                    Gdi.DeleteObject(gdiBitmap);
-                    GC.Collect();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message, ex);
-            }
-            finally
-            {
-                if (desktopContextHeight != IntPtr.Zero)
-                {
-                    Win32.ReleaseDC(Win32.GetDesktopWindow(), desktopContextHeight);
-                }
-            }
-            return screenImage;
-        }
+            var desktopBmp = new Bitmap(
+                Screen.PrimaryScreen.Bounds.Width,
+                Screen.PrimaryScreen.Bounds.Height);
 
+            var g = Graphics.FromImage(desktopBmp);
 
-        public struct Size
-        {
-            public int Width;
-            public int Height;
+            g.CopyFromScreen(0, 0, 0, 0,
+                new Size(
+                    Screen.PrimaryScreen.Bounds.Width,
+                    Screen.PrimaryScreen.Bounds.Height));
+            g.Dispose();
+            return desktopBmp;
+            
         }
     }
 }
