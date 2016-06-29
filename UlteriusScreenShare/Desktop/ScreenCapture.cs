@@ -79,45 +79,53 @@ namespace UlteriusScreenShare.Desktop
             var bounds = Rectangle.Empty;
             while (true)
             {
-                var clients = ConnectionHandler.Clients;
-                if (clients.Count > 0)
+                try
                 {
-                    var image = LocalScreen(ref bounds);
-                    if (_numByteFullScreen == 1)
+                    var clients = ConnectionHandler.Clients;
+                    if (clients.Count > 0)
                     {
-                        // Initialize the screen size (used for performance metrics)
-                        //
-                        _numByteFullScreen = bounds.Width * bounds.Height * 4;
-                    }
-                    if (bounds != Rectangle.Empty && image != null)
-                    {
-                        var data = PackScreenCaptureData(image, bounds);
-
-
-                        if (data != null && data.Length > 0)
+                        var image = LocalScreen(ref bounds);
+                        if (_numByteFullScreen == 1)
                         {
-                            foreach (var client in clients)
+                            // Initialize the screen size (used for performance metrics)
+                            //
+                            _numByteFullScreen = bounds.Width * bounds.Height * 4;
+                        }
+                        if (bounds != Rectangle.Empty && image != null)
+                        {
+                            var data = PackScreenCaptureData(image, bounds);
+
+
+                            if (data != null && data.Length > 0)
                             {
-                                // var packet = new Packet(client.Value, data, Packet.MessageType.Binary);
-                               // MessageHandler.MessageQueueManager.SendQueue.Add(packet);
-                                if (client.Value.AesShook && client.Value.Authenticated)
+                                foreach (var client in clients)
                                 {
-                                    var encryptedData = MessageHandler.EncryptFrame(data, client.Value);
-                                    if (encryptedData.Length == 0)
+                                    // var packet = new Packet(client.Value, data, Packet.MessageType.Binary);
+                                    // MessageHandler.MessageQueueManager.SendQueue.Add(packet);
+                                    if (client.Value.AesShook && client.Value.Authenticated)
                                     {
-                                        return;
+                                        var encryptedData = MessageHandler.EncryptFrame(data, client.Value);
+                                        if (encryptedData.Length == 0)
+                                        {
+                                            return;
+                                        }
+                                        var packet = new Packet(client.Value, encryptedData, Packet.MessageType.Binary);
+                                        MessageHandler.MessageQueueManager.SendQueue.Add(packet);
                                     }
-                                    var packet = new Packet(client.Value, encryptedData, Packet.MessageType.Binary);
-                                    MessageHandler.MessageQueueManager.SendQueue.Add(packet);
                                 }
                             }
                         }
                     }
+                    else
+                    {
+                        Console.WriteLine("Sleeping no clients");
+                        Thread.Sleep(5000);
+                    }
                 }
-                else
+                catch (Exception)
                 {
-                    Console.WriteLine("Sleeping no clients");
-                    Thread.Sleep(5000);
+
+                    
                 }
             }
         }
