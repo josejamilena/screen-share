@@ -53,7 +53,6 @@ namespace UlteriusScreenShare.Desktop
                     //write the id of the frame
                      binaryWriter.Write(Guid.NewGuid().ToByteArray());
                     //write the x and y coords of the 
-
                     binaryWriter.Write(bounds.X);
                     binaryWriter.Write(bounds.Y);
                     //write the rect data

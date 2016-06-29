@@ -86,7 +86,6 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
             using (var ms = new MemoryStream())
             {
                 ScreenCapture.CaptureDesktop().Save(ms, ImageFormat.Jpeg);
-
                 var imgData = ms.ToArray();
                 var compressed = ZlibStream.CompressBuffer(imgData);
                 //write the image
