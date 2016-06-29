@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
+using System.Windows.Forms;
 using Ionic.Zlib;
 using UlteriusScreenShare.Websocket.Server;
 using UlteriusScreenShare.Websocket.Server.Handlers;
@@ -50,10 +51,10 @@ namespace UlteriusScreenShare.Desktop
             {
                 using (var binaryWriter = new BinaryWriter(screenStream))
                 {
-                       //write the id of the frame
+                    //write the id of the frame
                     binaryWriter.Write(Guid.NewGuid().ToByteArray());
                     //write the x and y coords of the 
-                   
+
                     binaryWriter.Write(bounds.X);
                     binaryWriter.Write(bounds.Y);
                     //write the rect data
@@ -86,7 +87,7 @@ namespace UlteriusScreenShare.Desktop
                 var clients = ConnectionHandler.Clients;
                 if (clients.Count > 0)
                 {
-                    var image = Screen(ref bounds);
+                    var image = LocalScreen(ref bounds);
                     if (_numByteFullScreen == 1)
                     {
                         // Initialize the screen size (used for performance metrics)
@@ -130,8 +131,23 @@ namespace UlteriusScreenShare.Desktop
             }
         }
 
+        private static Rectangle GetDesktopBounds()
+        {
+            var l = int.MaxValue;
+            var t = int.MaxValue;
+            var r = int.MinValue;
+            var b = int.MinValue;
+            foreach (var screen in Screen.AllScreens)
+            {
+                if (screen.Bounds.Left < l) l = screen.Bounds.Left;
+                if (screen.Bounds.Top < t) t = screen.Bounds.Top;
+                if (screen.Bounds.Right > r) r = screen.Bounds.Right;
+                if (screen.Bounds.Bottom > b) b = screen.Bounds.Bottom;
+            }
+            return Rectangle.FromLTRB(l, t, r, b);
+        }
 
-        public Bitmap Screen(ref Rectangle bounds)
+        public Bitmap LocalScreen(ref Rectangle bounds)
         {
             Bitmap diff = null;
 
@@ -416,7 +432,7 @@ namespace UlteriusScreenShare.Desktop
             return new Rectangle(left, top, diffImgWidth, diffImgHeight);
         }
 
-        private Bitmap CaptureDesktop()
+        public static Bitmap CaptureDesktop()
         {
             var desktopContextHeight = IntPtr.Zero;
             Bitmap screenImage = null;

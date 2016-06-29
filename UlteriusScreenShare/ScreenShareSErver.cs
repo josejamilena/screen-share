@@ -1,20 +1,12 @@
 ﻿#region
 
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Security;
-using System.ServiceModel.Channels;
 using System.Threading;
-using Ionic.Zlib;
-
-using UlteriusScreenShare.Desktop;
 using UlteriusScreenShare.Websocket;
-using UlteriusScreenShare.Websocket.Server;
 using UlteriusScreenShare.Websocket.Server.Handlers;
 using vtortola.WebSockets;
 
@@ -39,14 +31,13 @@ namespace UlteriusScreenShare
             var endpoint = new IPEndPoint(address, _port);
             _server = new WebSocketEventListener(endpoint, new WebSocketListenerOptions
             {
-                PingTimeout = Timeout.InfiniteTimeSpan,
-                NegotiationTimeout = Timeout.InfiniteTimeSpan,
-                WebSocketReceiveTimeout = Timeout.InfiniteTimeSpan,
-                WebSocketSendTimeout = Timeout.InfiniteTimeSpan,
-                ParallelNegotiations = 16,
+                PingTimeout = TimeSpan.FromSeconds(15),
+                NegotiationTimeout = TimeSpan.FromSeconds(15),
+                WebSocketSendTimeout = TimeSpan.FromSeconds(15),
+                WebSocketReceiveTimeout = TimeSpan.FromSeconds(15),
+                ParallelNegotiations = Environment.ProcessorCount * 2,
                 NegotiationQueueCapacity = 256,
-                TcpBacklog = 1000,
-                BufferManager = BufferManager.CreateBufferManager((8192 + 1024) * 1000, 8192 + 1024)
+                TcpBacklog = 1000
             });
             _connectionHandler = new ConnectionHandler(_serverName, _password, _server);
           

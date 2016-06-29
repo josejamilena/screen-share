@@ -16,6 +16,7 @@ namespace UlteriusScreenShare.Websocket
             Started = DateTime.Now;
             Authenticated = false;
             AesShook = false;
+            ReceivedFullFrame = false;
         }
 
         public WebSocket Client { get; set; }
@@ -26,6 +27,7 @@ namespace UlteriusScreenShare.Websocket
         public SecureString AesKey { get; set; }
         public SecureString AesIv { get; set; }
         public bool AesShook { get; set; }
+        public bool ReceivedFullFrame { get; set; }
     }
 
 }

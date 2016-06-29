@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UlteriusScreenShare;
 
@@ -26,12 +27,16 @@ namespace UlteriusScreenShareExample
                 }
             }
         }
+        private static bool _quitFlag;
         static void Main(string[] args)
         {
-            
+            Console.CancelKeyPress += delegate { _quitFlag = true; };
             var server = new ScreenShareServer("Server", ConvertToSecureString("pass"), IPAddress.Any, 5555);
             server.Start();
-            Console.Read();
+            while (!_quitFlag)
+            {
+                Thread.Sleep(1);
+            }
         }
     }
 }

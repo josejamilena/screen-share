@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using vtortola.WebSockets;
 
 #endregion
@@ -22,40 +23,48 @@ namespace UlteriusScreenShare.Websocket.Server
             backgroundWorker.RunWorkerAsync();
         }
 
-        private void BackgroundWorkerOnDoWork(object sender, DoWorkEventArgs e)
+        private async void BackgroundWorkerOnDoWork(object sender, DoWorkEventArgs e)
         {
-            var worker = (BackgroundWorker) sender;
+            var worker = (BackgroundWorker)sender;
             while (!worker.CancellationPending)
             {
                 var packet = SendQueue.Take();
                 if (packet.Type == Packet.MessageType.Binary)
                 {
-                    SendBinaryPacket(packet);
+                    await SendBinaryPacket(packet);
                 }
                 else if (packet.Type == Packet.MessageType.Text)
                 {
-                    SendJsonPacket(packet);
+                    await SendJsonPacket(packet);
                 }
                 Console.WriteLine($"Packet Sent: {DateTime.Now}");
             }
         }
 
-        private void SendJsonPacket(Packet packet)
+        private async Task SendJsonPacket(Packet packet)
         {
             var json = packet.Json;
             var client = packet.AuthClient.Client;
             if (client.IsConnected)
             {
-                using (var msg = client.CreateMessageWriter(WebSocketMessageType.Text))
-                using (var writer = new StreamWriter(msg, Encoding.UTF8))
+                try
                 {
-                    writer.Write(json);
-                    writer.Flush();
+                    using (var msg = client.CreateMessageWriter(WebSocketMessageType.Text))
+                    using (var writer = new StreamWriter(msg, Encoding.UTF8))
+                    {
+                        await writer.WriteAsync(json);
+                        await writer.FlushAsync();
+                    }
+                }
+                catch (Exception e)
+                {
+
+                    Console.WriteLine(e.Message);
                 }
             }
         }
 
-        private void SendBinaryPacket(Packet packet)
+        private async Task SendBinaryPacket(Packet packet)
         {
             var authClient = packet.AuthClient;
             if (authClient != null && authClient.Client.IsConnected)
@@ -64,7 +73,7 @@ namespace UlteriusScreenShare.Websocket.Server
                 {
                     using (var memoryStream = new MemoryStream(packet.Data))
                     using (var messageWriter = authClient.Client.CreateMessageWriter(WebSocketMessageType.Binary))
-                        memoryStream.CopyTo(messageWriter);
+                        await memoryStream.CopyToAsync(messageWriter);
                 }
                 catch (Exception e)
                 {

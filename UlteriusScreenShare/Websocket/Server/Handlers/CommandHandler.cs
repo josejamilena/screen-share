@@ -2,11 +2,14 @@
 
 using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
+using Ionic.Zlib;
 using Newtonsoft.Json.Linq;
 using UlteriusScreenShare.Desktop;
 
@@ -78,11 +81,24 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
             }
         }
 
+        private byte[] FullScreenData()
+        {
+            using (var ms = new MemoryStream())
+            {
+                ScreenCapture.CaptureDesktop().Save(ms, ImageFormat.Jpeg);
+
+                var imgData = ms.ToArray();
+                var compressed = ZlibStream.CompressBuffer(imgData);
+                //write the image
+                return compressed;
+            }
+        }
         private void HandleFullFrame(AuthClient client)
         {
             var frameData = new
             {
-                Screen.PrimaryScreen.Bounds
+                Screen.PrimaryScreen.Bounds,
+                frameData = FullScreenData()
             };
             MessageHandler.SendMessage("frameData", frameData, client);
         }
