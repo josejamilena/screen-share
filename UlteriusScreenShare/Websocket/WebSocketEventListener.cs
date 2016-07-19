@@ -14,16 +14,16 @@ using vtortola.WebSockets.Rfc6455;
 
 namespace UlteriusScreenShare.Websocket
 {
-    public delegate void WebSocketEventListenerOnConnect(WebSocket webSocket);
+    internal delegate void WebSocketEventListenerOnConnect(WebSocket webSocket);
 
-    public delegate void WebSocketEventListenerOnDisconnect(WebSocket webSocket);
+    internal delegate void WebSocketEventListenerOnDisconnect(WebSocket webSocket);
 
-    public delegate void WebSocketEventListenerOnPlainTextMessage(WebSocket webSocket, string message);
-    public delegate void WebSocketEventListenerOnEncryptedMessage(WebSocket webSocket, byte[] message);
+    internal delegate void WebSocketEventListenerOnPlainTextMessage(WebSocket webSocket, string message);
+    internal delegate void WebSocketEventListenerOnEncryptedMessage(WebSocket webSocket, byte[] message);
 
-    public delegate void WebSocketEventListenerOnError(WebSocket webSocket, Exception error);
+    internal delegate void WebSocketEventListenerOnError(WebSocket webSocket, Exception error);
 
-    public class WebSocketEventListener : IDisposable
+    internal class WebSocketEventListener : IDisposable
     {
         private readonly WebSocketListener _listener;
 

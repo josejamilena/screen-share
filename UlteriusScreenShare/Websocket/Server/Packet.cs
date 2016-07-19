@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UlteriusScreenShare.Websocket.Server
 {
-    public class Packet
+    internal class Packet
     {
         public enum MessageType
         {

@@ -12,7 +12,7 @@ using vtortola.WebSockets;
 
 namespace UlteriusScreenShare.Websocket.Server
 {
-    public class MessageQueueManager
+    internal class MessageQueueManager
     {
         public BlockingCollection<Packet> SendQueue = new BlockingCollection<Packet>(new ConcurrentQueue<Packet>());
 

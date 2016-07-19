@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace UlteriusScreenShare.Security.Streams
 {
-    public class OfbStream : Stream
+    internal class OfbStream : Stream
     {
         private const int Blocks = 16;
         private const int Eos = 0; // the goddess of dawn is found at the end of the stream

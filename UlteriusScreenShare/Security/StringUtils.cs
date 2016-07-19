@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace UlteriusScreenShare.Security
 {
-    public static class StringUtils
+    internal static class StringUtils
     {
         public static bool IsBase64String(this string s)
         {

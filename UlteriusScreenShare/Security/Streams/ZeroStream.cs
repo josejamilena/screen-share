@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace UlteriusScreenShare.Security.Streams
 {
-    public class ZeroStream : Stream
+    internal class ZeroStream : Stream
     {
         public override bool CanRead => true;
 

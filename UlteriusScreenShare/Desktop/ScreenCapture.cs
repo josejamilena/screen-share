@@ -49,7 +49,7 @@ namespace UlteriusScreenShare.Desktop
                 using (var binaryWriter = new BinaryWriter(screenStream))
                 {
                     //write the id of the frame
-                   binaryWriter.Write(Guid.NewGuid().ToByteArray());
+                    binaryWriter.Write(Guid.NewGuid().ToByteArray());
                     //write the x and y coords of the 
                     binaryWriter.Write(bounds.X);
                     binaryWriter.Write(bounds.Y);
@@ -125,7 +125,7 @@ namespace UlteriusScreenShare.Desktop
                 catch (Exception)
                 {
 
-                    
+
                 }
             }
         }
