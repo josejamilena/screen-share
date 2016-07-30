@@ -7,11 +7,7 @@ using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using SharpDX.Direct3D11;
-using SharpDX.DXGI;
 using UlteriusScreenShare;
-using MapFlags = SharpDX.DXGI.MapFlags;
-using Resource = SharpDX.DXGI.Resource;
 
 namespace UlteriusScreenShareExample
 {

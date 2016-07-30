@@ -37,7 +37,7 @@ namespace UlteriusScreenShare.Websocket.Server
                 {
                     await SendJsonPacket(packet);
                 }
-                Console.WriteLine($"Packet Sent: {DateTime.Now}");
+               // Console.WriteLine($"Packet Sent: {DateTime.Now}");
             }
         }
 

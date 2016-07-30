@@ -107,24 +107,26 @@ namespace UlteriusScreenShare.Desktop
                                         var encryptedData = MessageHandler.EncryptFrame(data, client.Value);
                                         if (encryptedData.Length == 0)
                                         {
+                                           
                                             return;
                                         }
                                         var packet = new Packet(client.Value, encryptedData, Packet.MessageType.Binary);
                                         MessageHandler.MessageQueueManager.SendQueue.Add(packet);
                                     }
                                 }
+                               
                             }
                         }
                     }
                     else
                     {
-                        Console.WriteLine("Sleeping no clients");
+                       // Console.WriteLine("Sleeping no clients");
                         Thread.Sleep(5000);
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
-
+                    Console.WriteLine(e.Message);
 
                 }
             }

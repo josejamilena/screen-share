@@ -6,12 +6,14 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 using Ionic.Zlib;
 using Newtonsoft.Json.Linq;
 using UlteriusScreenShare.Desktop;
+using UlteriusScreenShare.WindowsInput.Native;
 
 #endregion
 
@@ -31,6 +33,7 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
 
         public void ProcessCommand(AuthClient client, string message)
         {
+
             var packet = JObject.Parse(message);
             var eventType = (string) packet["EventType"];
             var eventAction = (string) packet["Action"];
@@ -147,32 +150,34 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
 
         private void HandleDoubleClick()
         {
-            Console.WriteLine("Double click fired");
-            _simulator.Mouse.LeftButtonClick();
+          //  Console.WriteLine("Double click fired");
+          // _simulator.Mouse.LeftButtonClick();
         }
 
         private void HandleMouseDown()
         {
-            Console.WriteLine("Mouse down");
+          //  Console.WriteLine("Mouse down");
             _simulator.Mouse.LeftButtonDown();
+          
+         
         }
 
         private void HandleMouseUp()
         {
-            Console.WriteLine("Mouse up");
-            _simulator.Mouse.LeftButtonUp();
+           // Console.WriteLine("Mouse up");
+           _simulator.Mouse.LeftButtonUp();
         }
 
         private void HandleRightClick()
         {
-            Console.WriteLine("Right click");
-            _simulator.Mouse.RightButtonClick();
+          //  Console.WriteLine("Right click");
+           _simulator.Mouse.RightButtonClick();
         }
 
         private void HandleLeftClick()
         {
-            Console.WriteLine("Left click");
-            // _simulator.Mouse.LeftButtonClick();
+           // Console.WriteLine("Left click");
+            //_simulator.Mouse.LeftButtonClick();
         }
 
         private void MoveMouse(JObject packet)

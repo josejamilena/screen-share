@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
 using UlteriusScreenShare.Websocket;
@@ -21,8 +22,12 @@ namespace UlteriusScreenShare
         private readonly int _port;
         private readonly WebSocketEventListener _server;
         private readonly string _serverName;
+        [DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
+
         public ScreenShareServer(string serverName, SecureString password, IPAddress address, int port)
         {
+            if (Environment.OSVersion.Version.Major >= 6) SetProcessDPIAware();
             _port = port;
             _serverName = serverName;
             _password = password;
