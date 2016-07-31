@@ -3,6 +3,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Security;
+using System.Windows.Forms;
+using System.Windows.Input;
+using WindowsInput;
 using UlteriusScreenShare.Security;
 using vtortola.WebSockets;
 
@@ -60,7 +63,7 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
             }
         }
 
@@ -85,7 +88,7 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
             }
         }
 

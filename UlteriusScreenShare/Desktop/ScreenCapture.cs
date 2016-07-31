@@ -1,7 +1,6 @@
 ﻿#region
 
 using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -10,7 +9,6 @@ using System.Windows.Forms;
 using Ionic.Zlib;
 using UlteriusScreenShare.Websocket.Server;
 using UlteriusScreenShare.Websocket.Server.Handlers;
-using UlteriusScreenShare.Win32Api;
 
 #endregion
 
@@ -32,7 +30,7 @@ namespace UlteriusScreenShare.Desktop
             var junk = new Bitmap(10, 10);
             _graphics = Graphics.FromImage(junk);
 
-            Thread t = new Thread(ScreenService);
+            var t = new Thread(ScreenService);
             t.Start();
         }
 
@@ -89,7 +87,7 @@ namespace UlteriusScreenShare.Desktop
                         {
                             // Initialize the screen size (used for performance metrics)
                             //
-                            _numByteFullScreen = bounds.Width * bounds.Height * 4;
+                            _numByteFullScreen = bounds.Width*bounds.Height*4;
                         }
                         if (bounds != Rectangle.Empty && image != null)
                         {
@@ -107,27 +105,24 @@ namespace UlteriusScreenShare.Desktop
                                         var encryptedData = MessageHandler.EncryptFrame(data, client.Value);
                                         if (encryptedData.Length == 0)
                                         {
-                                           
                                             return;
                                         }
                                         var packet = new Packet(client.Value, encryptedData, Packet.MessageType.Binary);
                                         MessageHandler.MessageQueueManager.SendQueue.Add(packet);
                                     }
                                 }
-                               
                             }
                         }
                     }
                     else
                     {
-                       // Console.WriteLine("Sleeping no clients");
+                        // Console.WriteLine("Sleeping no clients");
                         Thread.Sleep(5000);
                     }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
-
+                    Console.WriteLine(e.Message + " " + e.StackTrace);
                 }
             }
         }
@@ -141,7 +136,12 @@ namespace UlteriusScreenShare.Desktop
             //
             lock (_newBitmap)
             {
-                _newBitmap = CaptureDesktop();
+                var image = CaptureDesktop();
+                if (image == null)
+                {
+                    return null;
+                }
+                _newBitmap = image;
 
                 // If we have a previous screenshot, only send back
                 //	a subset that is the minimum rectangular area
@@ -151,30 +151,18 @@ namespace UlteriusScreenShare.Desktop
                 {
                     // Get the bounding box.
                     //
-                    bounds = GetBoundingBoxForChanges();
-                    if (bounds == Rectangle.Empty)
-                    {
-                        // Nothing has changed.
-                        //
-                        PercentOfImage = 0.0;
-                    }
-                    else
+                    bounds = GetBoundingBoxForChanges(ref _prevBitmap, ref _newBitmap);
+                    if (bounds != Rectangle.Empty)
                     {
                         // Get the minimum rectangular area
                         //
-                        diff = new Bitmap(bounds.Width, bounds.Height);
-                        _graphics = Graphics.FromImage(diff);
-                        _graphics.DrawImage(_newBitmap, 0, 0, bounds, GraphicsUnit.Pixel);
+                        //diff = new Bitmap(bounds.Width, bounds.Height);
+                        diff = _newBitmap.Clone(bounds, _newBitmap.PixelFormat);
 
                         // Set the current bitmap as the previous to prepare
                         //	for the next screen capture.
                         //
                         _prevBitmap = _newBitmap;
-
-                        lock (_newBitmap)
-                        {
-                            PercentOfImage = 100.0 * (diff.Height * diff.Width) / (_newBitmap.Height * _newBitmap.Width);
-                        }
                     }
                 }
                 // We don't have a previous screen capture. Therefore
@@ -182,23 +170,21 @@ namespace UlteriusScreenShare.Desktop
                 //
                 else
                 {
-                    // Set the previous bitmap to the current to prepare
-                    //	for the next screen capture.
-                    //
-                    _prevBitmap = _newBitmap;
-                    diff = _newBitmap;
-
                     // Create a bounding rectangle.
                     //
                     bounds = new Rectangle(0, 0, _newBitmap.Width, _newBitmap.Height);
 
-                    PercentOfImage = 100.0;
+                    // Set the previous bitmap to the current to prepare
+                    //	for the next screen capture.
+                    //
+                    _prevBitmap = _newBitmap;
+                    diff = _newBitmap.Clone(bounds, _newBitmap.PixelFormat);
                 }
             }
             return diff;
         }
 
-        private Rectangle GetBoundingBoxForChanges()
+        private Rectangle GetBoundingBoxForChanges(ref Bitmap _prevBitmap, ref Bitmap _newBitmap)
         {
             // The search algorithm starts by looking
             //	for the top and left bounds. The search
@@ -238,16 +224,16 @@ namespace UlteriusScreenShare.Desktop
             var top = height;
             var bottom = 0;
 
-            BitmapData newScreenData = null;
-            BitmapData previousScreenData = null;
+            BitmapData bmNewData = null;
+            BitmapData bmPrevData = null;
             try
             {
                 // Lock the bits into memory.
                 //
-                newScreenData = _newBitmap.LockBits(
+                bmNewData = _newBitmap.LockBits(
                     new Rectangle(0, 0, _newBitmap.Width, _newBitmap.Height),
                     ImageLockMode.ReadOnly, _newBitmap.PixelFormat);
-                previousScreenData = _prevBitmap.LockBits(
+                bmPrevData = _prevBitmap.LockBits(
                     new Rectangle(0, 0, _prevBitmap.Width, _prevBitmap.Height),
                     ImageLockMode.ReadOnly, _prevBitmap.PixelFormat);
 
@@ -258,8 +244,8 @@ namespace UlteriusScreenShare.Desktop
                 // Get the number of integers (4 bytes) in each row
                 //	of the image.
                 //
-                var strideNew = newScreenData.Stride / numBytesPerPixel;
-                var stridePrev = previousScreenData.Stride / numBytesPerPixel;
+                var strideNew = bmNewData.Stride/numBytesPerPixel;
+                var stridePrev = bmPrevData.Stride/numBytesPerPixel;
 
                 // Get a pointer to the first pixel.
                 //
@@ -268,8 +254,8 @@ namespace UlteriusScreenShare.Desktop
                 //	change. So this algorithm reads the 4 bytes as an
                 //	integer and compares the two numbers.
                 //
-                var scanNew0 = newScreenData.Scan0;
-                var scanPrev0 = previousScreenData.Scan0;
+                var scanNew0 = bmNewData.Scan0;
+                var scanPrev0 = bmPrevData.Scan0;
 
                 // Enter the unsafe code.
                 //
@@ -277,18 +263,9 @@ namespace UlteriusScreenShare.Desktop
                 {
                     // Cast the safe pointers into unsafe pointers.
                     //
-                    var pNew = (int*)(void*)scanNew0;
-                    var pPrev = (int*)(void*)scanPrev0;
 
-                    // First Pass - Find the left and top bounds
-                    //	of the minimum bounding rectangle. Adapt the
-                    //	number of pixels scanned from left to right so
-                    //	we only scan up to the current bound. We also
-                    //	initialize the bottom & right. This helps optimize
-                    //	the second pass.
-                    //
-                    // For all rows of pixels (top to bottom)
-                    //
+                    var pNew = (int*) scanNew0.ToPointer();
+                    var pPrev = (int*) scanPrev0.ToPointer();
                     for (var y = 0; y < _newBitmap.Height; ++y)
                     {
                         // For pixels up to the current bound (left to right)
@@ -298,26 +275,23 @@ namespace UlteriusScreenShare.Desktop
                             // Use pointer arithmetic to index the
                             //	next pixel in this row.
                             //
-                            if ((pNew + x)[0] != (pPrev + x)[0])
+                            var test1 = (pNew + x)[0];
+                            var test2 = (pPrev + x)[0];
+                            var b1 = test1 & 0xff;
+                            var g1 = (test1 & 0xff00) >> 8;
+                            var r1 = (test1 & 0xff0000) >> 16;
+                            var a1 = (test1 & 0xff000000) >> 24;
+
+                            var b2 = test2 & 0xff;
+                            var g2 = (test2 & 0xff00) >> 8;
+                            var r2 = (test2 & 0xff0000) >> 16;
+                            var a2 = (test2 & 0xff000000) >> 24;
+                            if (b1 != b2 || g1 != g2 || r1 != r2 || a1 != a2)
                             {
-                                // Found a change.
-                                //
-                                if (x < left)
-                                {
+                                if (left > x)
                                     left = x;
-                                }
-                                if (x > right)
-                                {
-                                    right = x;
-                                }
-                                if (y < top)
-                                {
+                                if (top > y)
                                     top = y;
-                                }
-                                if (y > bottom)
-                                {
-                                    bottom = y;
-                                }
                             }
                         }
 
@@ -327,60 +301,41 @@ namespace UlteriusScreenShare.Desktop
                         pPrev += stridePrev;
                     }
 
-                    // If we did not find any changed pixels
-                    //	then no need to do a second pass.
-                    //
-                    if (left != width)
+                    pNew = (int*) scanNew0.ToPointer();
+                    pPrev = (int*) scanPrev0.ToPointer();
+                    pNew += (_newBitmap.Height - 1)*strideNew;
+                    pPrev += (_prevBitmap.Height - 1)*stridePrev;
+
+                    for (var y = _newBitmap.Height - 1; y > top; y--)
                     {
-                        // Second Pass - The first pass found at
-                        //	least one different pixel and has set
-                        //	the left & top bounds. In addition, the
-                        //	right & bottom bounds have been initialized.
-                        //	Adapt the number of pixels scanned from right
-                        //	to left so we only scan up to the current bound.
-                        //	In addition, there is no need to scan past
-                        //	the top bound.
-                        //
-
-                        // Set the pointers to the first element of the
-                        //	bottom row.
-                        //
-                        pNew = (int*)(void*)scanNew0;
-                        pPrev = (int*)(void*)scanPrev0;
-                        pNew += (_newBitmap.Height - 1) * strideNew;
-                        pPrev += (_prevBitmap.Height - 1) * stridePrev;
-
-                        // For each row (bottom to top)
-                        //
-                        for (var y = _newBitmap.Height - 1; y > top; y--)
+                        for (var x = _newBitmap.Width - 1; x > left; x--)
                         {
-                            // For each column (right to left)
-                            //
-                            for (var x = _newBitmap.Width - 1; x > right; x--)
+                            var test1 = (pNew + x)[0];
+                            var test2 = (pPrev + x)[0];
+                            var b1 = test1 & 0xff;
+                            var g1 = (test1 & 0xff00) >> 8;
+                            var r1 = (test1 & 0xff0000) >> 16;
+                            var a1 = (test1 & 0xff000000) >> 24;
+
+                            var b2 = test2 & 0xff;
+                            var g2 = (test2 & 0xff00) >> 8;
+                            var r2 = (test2 & 0xff0000) >> 16;
+                            var a2 = (test2 & 0xff000000) >> 24;
+                            if (b1 != b2 || g1 != g2 || r1 != r2 || a1 != a2)
                             {
-                                // Use pointer arithmetic to index the
-                                //	next pixel in this row.
-                                //
-                                if ((pNew + x)[0] != (pPrev + x)[0])
+                                if (x > right)
                                 {
-                                    // Found a change.
-                                    //
-                                    if (x > right)
-                                    {
-                                        right = x;
-                                    }
-                                    if (y > bottom)
-                                    {
-                                        bottom = y;
-                                    }
+                                    right = x;
+                                }
+                                if (y > bottom)
+                                {
+                                    bottom = y;
                                 }
                             }
-
-                            // Move up one row.
-                            //
-                            pNew -= strideNew;
-                            pPrev -= stridePrev;
                         }
+
+                        pNew -= strideNew;
+                        pPrev -= stridePrev;
                     }
                 }
             }
@@ -392,13 +347,13 @@ namespace UlteriusScreenShare.Desktop
             {
                 // Unlock the bits of the image.
                 //
-                if (newScreenData != null)
+                if (bmNewData != null)
                 {
-                    _newBitmap.UnlockBits(newScreenData);
+                    _newBitmap.UnlockBits(bmNewData);
                 }
-                if (previousScreenData != null)
+                if (bmPrevData != null)
                 {
-                    _prevBitmap.UnlockBits(previousScreenData);
+                    _prevBitmap.UnlockBits(bmPrevData);
                 }
             }
 
@@ -417,46 +372,37 @@ namespace UlteriusScreenShare.Desktop
             //
             return new Rectangle(left, top, diffImgWidth, diffImgHeight);
         }
+
+
+        public static Bitmap CaptureDesktop()
+        {
+            try
+            {
+                var desktopBmp = new Bitmap(
+                      Screen.PrimaryScreen.Bounds.Width,
+                      Screen.PrimaryScreen.Bounds.Height);
+
+                var g = Graphics.FromImage(desktopBmp);
+
+                g.CopyFromScreen(0, 0, 0, 0,
+                    new System.Drawing.Size(
+                        Screen.PrimaryScreen.Bounds.Width,
+                        Screen.PrimaryScreen.Bounds.Height));
+                g.Dispose();
+                return desktopBmp;
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+            return null;
+        }
+
         public struct Size
         {
             public int Width;
             public int Height;
-        }
-        public static Bitmap CaptureDesktop()
-        {
-            var desktopContextHeight = IntPtr.Zero;
-            Bitmap screenImage = null;
-            try
-            {
-                desktopContextHeight = Win32.GetDC(Win32.GetDesktopWindow());
-                var gdiDesktopContext = Gdi.CreateCompatibleDC(desktopContextHeight);
-                Size screenSize;
-                screenSize.Width = Win32.GetSystemMetrics(0);
-                screenSize.Height = Win32.GetSystemMetrics(1);
-                var gdiBitmap = Gdi.CreateCompatibleBitmap(desktopContextHeight, screenSize.Width, screenSize.Height);
-                if (gdiBitmap != IntPtr.Zero)
-                {
-                    var oldGdi = Gdi.SelectObject(gdiDesktopContext, gdiBitmap);
-                    Gdi.BitBlt(gdiDesktopContext, 0, 0, screenSize.Width, screenSize.Height, desktopContextHeight,
-                        0, 0, Gdi.Srccopy);
-                    Gdi.SelectObject(gdiDesktopContext, oldGdi);
-                    screenImage = Image.FromHbitmap(gdiBitmap);
-                    Gdi.DeleteObject(gdiBitmap);
-                    GC.Collect();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                if (desktopContextHeight != IntPtr.Zero)
-                {
-                    Win32.ReleaseDC(Win32.GetDesktopWindow(), desktopContextHeight);
-                }
-            }
-            return screenImage;
         }
     }
 }

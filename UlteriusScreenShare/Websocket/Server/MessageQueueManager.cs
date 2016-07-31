@@ -25,31 +25,42 @@ namespace UlteriusScreenShare.Websocket.Server
 
         private async void BackgroundWorkerOnDoWork(object sender, DoWorkEventArgs e)
         {
-            var worker = (BackgroundWorker)sender;
-            while (!worker.CancellationPending)
+            try
             {
-                var packet = SendQueue.Take();
-                if (packet.Type == Packet.MessageType.Binary)
+                var worker = (BackgroundWorker)sender;
+                while (!worker.CancellationPending)
                 {
-                    await SendBinaryPacket(packet);
+
+                    var packet = SendQueue.Take();
+                    if (packet == null) continue;
+                    //Console.WriteLine($"Packet Sending for: {DateTime.Now} {packet.Type}");
+                    if (packet.Type == Packet.MessageType.Binary)
+                    {
+                        await SendBinaryPacket(packet);
+                    }
+                    else if (packet.Type == Packet.MessageType.Text)
+                    {
+                        await SendJsonPacket(packet);
+                    }
+                    //Console.WriteLine($"Packet Sent: {DateTime.Now}");
                 }
-                else if (packet.Type == Packet.MessageType.Text)
-                {
-                    await SendJsonPacket(packet);
-                }
-               // Console.WriteLine($"Packet Sent: {DateTime.Now}");
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message + "  " + ex.StackTrace);
             }
         }
 
         private async Task SendJsonPacket(Packet packet)
         {
             var json = packet.Json;
-            var client = packet.AuthClient.Client;
-            if (client.IsConnected)
+            var authClient = packet.AuthClient;
+            if (authClient != null && authClient.Client.IsConnected)
             {
                 try
                 {
-                    using (var msg = client.CreateMessageWriter(WebSocketMessageType.Text))
+                    using (var msg = authClient.Client.CreateMessageWriter(WebSocketMessageType.Text))
                     using (var writer = new StreamWriter(msg, Encoding.UTF8))
                     {
                         await writer.WriteAsync(json);
@@ -59,7 +70,7 @@ namespace UlteriusScreenShare.Websocket.Server
                 catch (Exception e)
                 {
 
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
                 }
             }
         }
@@ -77,7 +88,7 @@ namespace UlteriusScreenShare.Websocket.Server
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
                 }
             }
         }

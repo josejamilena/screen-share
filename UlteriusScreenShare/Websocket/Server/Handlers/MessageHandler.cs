@@ -70,7 +70,7 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
             }
             catch (Exception e)
             {
-              Console.WriteLine(e.Message);
+              Console.WriteLine(e.StackTrace);
             }
             if (authClient != null)
             {

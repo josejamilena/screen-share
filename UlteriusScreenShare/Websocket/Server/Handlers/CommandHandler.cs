@@ -6,10 +6,8 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using WindowsInput;
-using WindowsInput.Native;
 using Ionic.Zlib;
 using Newtonsoft.Json.Linq;
 using UlteriusScreenShare.Desktop;
@@ -33,10 +31,24 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
 
         public void ProcessCommand(AuthClient client, string message)
         {
-
             var packet = JObject.Parse(message);
+            if (packet == null)
+            {
+                return;
+            }
+
             var eventType = (string) packet["EventType"];
+            if (eventType == null)
+            {
+                return;
+            }
+
             var eventAction = (string) packet["Action"];
+            if (eventAction == null)
+            {
+                return;
+            }
+
             if (eventType.Equals("Mouse"))
             {
                 switch (eventAction)
@@ -71,6 +83,9 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
                     case "KeyDown":
                         HandleKeyDown(packet);
                         break;
+                    case "KeyUp":
+                        HandleKeyUp(packet);
+                        break;
                 }
             }
             else if (eventType.Equals("Frame"))
@@ -84,8 +99,25 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
             }
         }
 
+        private void HandleKeyUp(JObject packet)
+        {
+            var keyCodes = packet["KeyCodes"];
+            var codes =
+                keyCodes.Select(code => ToHex(int.Parse(code.ToString())))
+                    .Select(hexString => Convert.ToInt32(hexString, 16))
+                    .ToList();
+
+
+            foreach (var code in codes)
+            {
+                var virtualKey = (VirtualKeyCode) code;
+                _simulator.Keyboard.KeyUp(virtualKey);
+            }
+        }
+
         private byte[] FullScreenData()
         {
+            Console.WriteLine("Full screen request");
             using (var ms = new MemoryStream())
             {
                 ScreenCapture.CaptureDesktop().Save(ms, ImageFormat.Jpeg);
@@ -95,6 +127,7 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
                 return compressed;
             }
         }
+
         private void HandleFullFrame(AuthClient client)
         {
             var frameData = new
@@ -126,57 +159,42 @@ namespace UlteriusScreenShare.Websocket.Server.Handlers
                     .Select(hexString => Convert.ToInt32(hexString, 16))
                     .ToList();
 
-            if (codes.Count >= 2)
+
+            foreach (var code in codes)
             {
-                foreach (var code in codes)
-                {
-                    var virtualKey = (VirtualKeyCode) code;
-                    _simulator.Keyboard.KeyDown(virtualKey);
-                }
-                //fuck.gif
-                foreach (var code in codes)
-                {
-                    var virtualKey = (VirtualKeyCode) code;
-                    _simulator.Keyboard.KeyUp(virtualKey);
-                }
-            }
-            else
-            {
-                var virtualKey = (VirtualKeyCode) codes[0];
-                _simulator.Keyboard.KeyPress(virtualKey);
+                var virtualKey = (VirtualKeyCode) code;
+                _simulator.Keyboard.KeyDown(virtualKey);
             }
         }
 
 
         private void HandleDoubleClick()
         {
-          //  Console.WriteLine("Double click fired");
-          // _simulator.Mouse.LeftButtonClick();
+            //  Console.WriteLine("Double click fired");
+            // _simulator.Mouse.LeftButtonClick();
         }
 
         private void HandleMouseDown()
         {
-          //  Console.WriteLine("Mouse down");
+            //  Console.WriteLine("Mouse down");
             _simulator.Mouse.LeftButtonDown();
-          
-         
         }
 
         private void HandleMouseUp()
         {
-           // Console.WriteLine("Mouse up");
-           _simulator.Mouse.LeftButtonUp();
+            // Console.WriteLine("Mouse up");
+            _simulator.Mouse.LeftButtonUp();
         }
 
         private void HandleRightClick()
         {
-          //  Console.WriteLine("Right click");
-           _simulator.Mouse.RightButtonClick();
+            //  Console.WriteLine("Right click");
+            _simulator.Mouse.RightButtonClick();
         }
 
         private void HandleLeftClick()
         {
-           // Console.WriteLine("Left click");
+            // Console.WriteLine("Left click");
             //_simulator.Mouse.LeftButtonClick();
         }
 
