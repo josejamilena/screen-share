@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Ionic.Zlib;
 using UlteriusScreenShare.Websocket.Server;
@@ -30,7 +31,7 @@ namespace UlteriusScreenShare.Desktop
             var junk = new Bitmap(10, 10);
             _graphics = Graphics.FromImage(junk);
 
-            var t = new Thread(ScreenService);
+            var t = new Task(ScreenService);
             t.Start();
         }
 
@@ -72,7 +73,7 @@ namespace UlteriusScreenShare.Desktop
         }
 
 
-        private void ScreenService()
+        private async void ScreenService()
         {
             var bounds = Rectangle.Empty;
             while (true)
@@ -117,11 +118,12 @@ namespace UlteriusScreenShare.Desktop
                     else
                     {
                         // Console.WriteLine("Sleeping no clients");
-                        Thread.Sleep(5000);
+                        await Task.Delay(5000);
                     }
                 }
                 catch (Exception e)
                 {
+                    await Task.Delay(5000);
                     Console.WriteLine(e.Message + " " + e.StackTrace);
                 }
             }
